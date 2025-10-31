@@ -426,7 +426,7 @@ export default class TemplateManager {
           context.drawImage(template.bitmap, Number(template.pixelCoords[0]) * this.drawMult, Number(template.pixelCoords[1]) * this.drawMult);
         } else {
           // ELSE we need to apply the color filter
-
+          let selectedColor = document.querySelector('.border-primary.ring-primary');
           console.log('Applying color filter...');
 
           const tempW = template.bitmap.width;
@@ -469,6 +469,17 @@ export default class TemplateManager {
               const isPaletteColorEnabled = palette?.[key]?.enabled !== false;
               if (!inWplacePalette || !isPaletteColorEnabled) {
                 data[idx + 3] = 0; // hide disabled color center pixel
+              } else {
+                if (selectedColor && `rgb(${r}, ${g}, ${b})` === selectedColor?.style?.backgroundColor) {
+                  data[idx-4] = 255
+                  data[idx-4+1] = 0
+                  data[idx-4+2] = 0
+                  data[idx-4+3] = 255
+                  data[idx+4] = 255
+                  data[idx+4+1] = 0
+                  data[idx+4+2] = 0
+                  data[idx+4+3] = 255
+                }
               }
             }
           }
