@@ -124,8 +124,12 @@ export default class ApiManager {
           
           const blobUUID = data['blobID'];
           const blobData = data['blobData'];
-          
-          const templateBlob = await this.templateManager.drawTemplateOnTile(blobData, tileCoordsTile);
+
+          let templateBlob = null
+          templateBlob = await this.templateManager.drawTemplateOnTile(blobData, tileCoordsTile);
+
+          // const highlightSelected
+          templateBlob = await this.templateManager.drawHighlightOnTile(blobData, templateBlob, tileCoordsTile)
 
           window.postMessage({
             source: 'blue-marble',
