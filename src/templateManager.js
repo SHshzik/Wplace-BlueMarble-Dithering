@@ -272,7 +272,7 @@ export default class TemplateManager {
    */
   async drawTemplateOnTile(tileBlob, tileCoords) {
     const templatesToDraw = await this.templatesToDrawOnTile(tileCoords);
-    if (templatesToDraw.size == 0) { return tileBlob; }
+    if (templatesToDraw.length === 0) { return tileBlob; }
 
     const templateCount = templatesToDraw?.length || 0; // Number of templates to draw on this tile
     console.log(`templateCount = ${templateCount}`);
@@ -731,7 +731,7 @@ export default class TemplateManager {
     console.log(json);
 
     // If the passed in JSON is a Blue Marble template object...
-    if (json?.whoami == 'BlueMarble') {
+    if (json?.whoami === 'BlueMarble' || json?.whoami === 'RedMarble') {
       this.#parseBlueMarble(json); // ...parse the template object as Blue Marble
     }
   }
