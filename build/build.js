@@ -46,7 +46,7 @@ try {
 }
 
 // Fetches the userscript metadata banner
-const metaContent = fs.readFileSync('src/BlueMarble.meta.js', 'utf8');
+const metaContent = fs.readFileSync('src/RedMarble.meta.js', 'utf8');
 
 // Compiles a string array of all CSS files
 const cssFiles = fs.readdirSync('src/')
@@ -57,7 +57,7 @@ const cssFiles = fs.readdirSync('src/')
 esbuild.build({
   entryPoints: cssFiles,
   bundle: true,
-  outfile: 'dist/BlueMarble.user.css',
+  outfile: 'dist/RedMarble.user.css',
   minify: true
 });
 
@@ -65,7 +65,7 @@ esbuild.build({
 const resultEsbuild = await esbuild.build({
   entryPoints: ['src/main.js'], // "Infect" the files from this point (it spreads from this "patient 0")
   bundle: true, // Should the code be bundled?
-  outfile: 'dist/BlueMarble.user.js', // The file the bundled code is exported to
+  outfile: 'dist/RedMarble.user.js', // The file the bundled code is exported to
   format: 'iife', // What format the bundler bundles the code into
   target: 'es2020', // What is the minimum version/year that should be supported? When omited, it attempts to support backwards compatability with legacy browsers
   platform: 'browser', // The platform the bundled code will be operating on
@@ -102,7 +102,7 @@ let resultTerser = await terser.minify(resultEsbuildJS.text, {
 });
 
 // Writes the obfuscated/mangled JS code to a file
-fs.writeFileSync('dist/BlueMarble.user.js', resultTerser.code, 'utf8');
+fs.writeFileSync('dist/RedMarble.user.js', resultTerser.code, 'utf8');
 
 let importedMapCSS = {}; // The imported CSS map
 
@@ -110,7 +110,7 @@ let importedMapCSS = {}; // The imported CSS map
 // Theoretically, if the previous map is always imported, the names would not scramble. However, the names would never decrease in number...
 if (!isGitHub) {
   try {
-    importedMapCSS = JSON.parse(fs.readFileSync('dist/BlueMarble.user.css.map.json', 'utf8'));
+    importedMapCSS = JSON.parse(fs.readFileSync('dist/RedMarble.user.css.map.json', 'utf8'));
   } catch {
     console.log(`${consoleStyle.YELLOW}Warning! Could not find a CSS map to import. A 100% new CSS map will be generated...${consoleStyle.RESET}`);
   }
@@ -121,21 +121,21 @@ if (!isGitHub) {
 const mapCSS = mangleSelectors({
   inputPrefix: 'bm-',
   outputPrefix: 'bm-',
-  pathJS: 'dist/BlueMarble.user.js',
-  pathCSS: 'dist/BlueMarble.user.css',
+  pathJS: 'dist/RedMarble.user.js',
+  pathCSS: 'dist/RedMarble.user.css',
   importMap: importedMapCSS,
   returnMap: isGitHub
 });
 
 // If a map was returned, write it to the file
 if (mapCSS) {
-  fs.writeFileSync('dist/BlueMarble.user.css.map.json', JSON.stringify(mapCSS, null, 2));
+  fs.writeFileSync('dist/RedMarble.user.css.map.json', JSON.stringify(mapCSS, null, 2));
 }
 
 // Adds the banner
 fs.writeFileSync(
-  'dist/BlueMarble.user.js', 
-  metaContent + fs.readFileSync('dist/BlueMarble.user.js', 'utf8'), 
+  'dist/RedMarble.user.js',
+  metaContent + fs.readFileSync('dist/RedMarble.user.js', 'utf8'),
   'utf8'
 );
 

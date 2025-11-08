@@ -1,11 +1,10 @@
 {
-  "name": "wplace-bluemarble",
+  "name": "wplace-redmarble",
   "version": "0.86.0",
   "type": "module",
-  "homepage": "https://bluemarble.lol/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/SwingTheVine/Wplace-BlueMarble.git"
+    "url": "https://github.com/SHshzik/Wplace-BlueMarble-Dithering"
   },
   "scripts": {
     "build": "node build/build.js",
