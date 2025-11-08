@@ -247,7 +247,7 @@ function observeBlack() {
 
 /** Deploys the overlay to the page with minimize/maximize functionality.
  * Creates a responsive overlay UI that can toggle between full-featured and minimized states.
- * 
+ *
  * Parent/child relationships in the DOM structure below are indicated by indentation.
  * @since 0.58.3
  */
@@ -270,23 +270,23 @@ function buildOverlayMain() {
   overlayMain.addDiv({'id': 'bm-overlay', 'style': 'top: 10px; right: 75px'})
     .addDiv({'id': 'bm-contain-header'})
       .addDiv({'id': 'bm-bar-drag'}).buildElement()
-      .addImg({'alt': 'Blue Marble Icon - Click to minimize/maximize', 'src': 'https://raw.githubusercontent.com/SwingTheVine/Wplace-BlueMarble/main/dist/assets/Favicon.png', 'style': 'cursor: pointer;'}, 
+      .addImg({'alt': 'Blue Marble Icon - Click to minimize/maximize', 'src': 'https://raw.githubusercontent.com/SwingTheVine/Wplace-BlueMarble/main/dist/assets/Favicon.png', 'style': 'cursor: pointer;'},
         (instance, img) => {
           /** Click event handler for overlay minimize/maximize functionality.
-           * 
+           *
            * Toggles between two distinct UI states:
            * 1. MINIMIZED STATE (60×76px):
            *    - Shows only the Blue Marble icon and drag bar
            *    - Hides all input fields, buttons, and status information
            *    - Applies fixed dimensions for consistent appearance
            *    - Repositions icon with 3px right offset for visual centering
-           * 
+           *
            * 2. MAXIMIZED STATE (responsive):
            *    - Restores full functionality with all UI elements
            *    - Removes fixed dimensions to allow responsive behavior
            *    - Resets icon positioning to default alignment
            *    - Shows success message when returning to maximized state
-           * 
+           *
            * @param {Event} event - The click event object (implicit)
            */
           img.addEventListener('click', () => {
@@ -301,7 +301,7 @@ function buildOverlayMain() {
             const enableButton = document.querySelector('#bm-button-enable');
             const disableButton = document.querySelector('#bm-button-disable');
             const coordInputs = document.querySelectorAll('#bm-contain-coords input');
-            
+
             // Pre-restore original dimensions when switching to maximized state
             // This ensures smooth transition and prevents layout issues
             if (!isMinimized) {
@@ -310,7 +310,7 @@ function buildOverlayMain() {
               overlay.style.minWidth = "200px";
               overlay.style.padding = "10px";
             }
-            
+
             // Define elements that should be hidden/shown during state transitions
             // Each element is documented with its purpose for maintainability
             const elementsToToggle = [
@@ -323,7 +323,7 @@ function buildOverlayMain() {
               `#${instance.outputStatusId}`,       // Status log textarea for user feedback
               '#bm-contain-colorfilter'            // Color filter UI
             ];
-            
+
             // Apply visibility changes to all toggleable elements
             elementsToToggle.forEach(selector => {
               const elements = document.querySelectorAll(selector);
@@ -336,17 +336,17 @@ function buildOverlayMain() {
               // ==================== MINIMIZED STATE CONFIGURATION ====================
               // In minimized state, we hide ALL interactive elements except the icon and drag bar
               // This creates a clean, unobtrusive interface that maintains only essential functionality
-              
+
               // Hide coordinate input container completely
               if (coordsContainer) {
                 coordsContainer.style.display = 'none';
               }
-              
+
               // Hide coordinate button (pin icon)
               if (coordsButton) {
                 coordsButton.style.display = 'none';
               }
-              
+
               // Hide create template button
               if (createButton) {
                 createButton.style.display = 'none';
@@ -361,12 +361,12 @@ function buildOverlayMain() {
               if (disableButton) {
                 disableButton.style.display = 'none';
               }
-              
+
               // Hide all coordinate input fields individually (failsafe)
               coordInputs.forEach(input => {
                 input.style.display = 'none';
               });
-              
+
               // Apply fixed dimensions for consistent minimized appearance
               // These dimensions were chosen to accommodate the icon while remaining compact
               overlay.style.width = '60px';    // Fixed width for consistency
@@ -374,16 +374,16 @@ function buildOverlayMain() {
               overlay.style.maxWidth = '60px';  // Prevent expansion
               overlay.style.minWidth = '60px';  // Prevent shrinking
               overlay.style.padding = '8px';    // Comfortable padding around icon
-              
+
               // Apply icon positioning for better visual centering in minimized state
               // The 3px offset compensates for visual weight distribution
               img.style.marginLeft = '3px';
-              
+
               // Configure header layout for minimized state
               header.style.textAlign = 'center';
               header.style.margin = '0';
               header.style.marginBottom = '0';
-              
+
               // Ensure drag bar remains visible and properly spaced
               if (dragBar) {
                 dragBar.style.display = '';
@@ -393,7 +393,7 @@ function buildOverlayMain() {
               // ==================== MAXIMIZED STATE RESTORATION ====================
               // In maximized state, we restore all elements to their default functionality
               // This involves clearing all style overrides applied during minimization
-              
+
               // Restore coordinate container to default state
               if (coordsContainer) {
                 coordsContainer.style.display = '';           // Show container
@@ -404,12 +404,12 @@ function buildOverlayMain() {
                 coordsContainer.style.textAlign = '';         // Reset text alignment
                 coordsContainer.style.margin = '';            // Reset margins
               }
-              
+
               // Restore coordinate button visibility
               if (coordsButton) {
                 coordsButton.style.display = '';
               }
-              
+
               // Restore create button visibility and reset positioning
               if (createButton) {
                 createButton.style.display = '';
@@ -427,42 +427,42 @@ function buildOverlayMain() {
                 disableButton.style.display = '';
                 disableButton.style.marginTop = '';
               }
-              
+
               // Restore all coordinate input fields
               coordInputs.forEach(input => {
                 input.style.display = '';
               });
-              
+
               // Reset icon positioning to default (remove minimized state offset)
               img.style.marginLeft = '';
-              
+
               // Restore overlay to responsive dimensions
               overlay.style.padding = '10px';
-              
+
               // Reset header styling to defaults
               header.style.textAlign = '';
               header.style.margin = '';
               header.style.marginBottom = '';
-              
+
               // Reset drag bar spacing
               if (dragBar) {
                 dragBar.style.marginBottom = '0.5em';
               }
-              
+
               // Remove all fixed dimensions to allow responsive behavior
               // This ensures the overlay can adapt to content changes
               overlay.style.width = '';
               overlay.style.height = '';
             }
-            
+
             // ==================== ACCESSIBILITY AND USER FEEDBACK ====================
             // Update accessibility information for screen readers and tooltips
-            
+
             // Update alt text to reflect current state for screen readers and tooltips
-            img.alt = isMinimized ? 
-              'Blue Marble Icon - Minimized (Click to maximize)' : 
+            img.alt = isMinimized ?
+              'Blue Marble Icon - Minimized (Click to maximize)' :
               'Blue Marble Icon - Maximized (Click to minimize)';
-            
+
             // No status message needed - state change is visually obvious to users
           });
         }
@@ -513,9 +513,9 @@ function buildOverlayMain() {
               return;
             }
 
-            let coords = selectAllCoordinateInputs(document); 
+            let coords = selectAllCoordinateInputs(document);
 
-            for (let i = 0; i < coords.length; i++) { 
+            for (let i = 0; i < coords.length; i++) {
               coords[i].value = splitText[i]; //add the split vales
             }
 
@@ -566,6 +566,7 @@ function buildOverlayMain() {
         .addDiv({'id': 'bm-colorfilter-list'}).buildElement()
       .buildElement()
       .addInputFile({'id': 'bm-input-file-template', 'textContent': 'Upload Template', 'accept': 'image/png, image/jpeg, image/webp, image/bmp, image/gif'}).buildElement()
+      .addSwitch()
       .addDiv({'id': 'bm-contain-buttons-template'})
         .addButton({'id': 'bm-button-enable', 'textContent': 'Enable'}, (instance, button) => {
           button.onclick = () => {
@@ -612,13 +613,13 @@ function buildOverlayMain() {
           // .addButton({'id': 'bm-button-teleport', 'className': 'bm-help', 'textContent': '✈'}).buildElement()
           // .addButton({'id': 'bm-button-favorite', 'className': 'bm-help', 'innerHTML': '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><polygon points="10,2 12,7.5 18,7.5 13.5,11.5 15.5,18 10,14 4.5,18 6.5,11.5 2,7.5 8,7.5" fill="white"></polygon></svg>'}).buildElement()
           // .addButton({'id': 'bm-button-templates', 'className': 'bm-help', 'innerHTML': '🖌'}).buildElement()
-          .addButton({'id': 'bm-button-convert', 'className': 'bm-help', 'innerHTML': '🎨', 'title': 'Template Color Converter'}, 
+          .addButton({'id': 'bm-button-convert', 'className': 'bm-help', 'innerHTML': '🎨', 'title': 'Template Color Converter'},
             (instance, button) => {
             button.addEventListener('click', () => {
               window.open('https://pepoafonso.github.io/color_converter_wplace/', '_blank', 'noopener noreferrer');
             });
           }).buildElement()
-          .addButton({'id': 'bm-button-website', 'className': 'bm-help', 'innerHTML': '🌐', 'title': 'Official Blue Marble Website'}, 
+          .addButton({'id': 'bm-button-website', 'className': 'bm-help', 'innerHTML': '🌐', 'title': 'Official Blue Marble Website'},
             (instance, button) => {
             button.addEventListener('click', () => {
               window.open('https://bluemarble.lol/', '_blank', 'noopener noreferrer');
@@ -629,7 +630,7 @@ function buildOverlayMain() {
       .buildElement()
     .buildElement()
   .buildOverlay(document.body);
-
+  //
   // ------- Helper: Build the color filter list -------
   window.buildColorFilterList = function buildColorFilterList() {
     const listContainer = document.querySelector('#bm-colorfilter-list');
@@ -738,7 +739,7 @@ function buildOverlayTabTemplate() {
                 isMinimized = true;
               }
 
-              
+
             }
           }
         ).buildElement()

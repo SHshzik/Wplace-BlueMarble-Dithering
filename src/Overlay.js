@@ -333,6 +333,24 @@ export default class Overlay {
     callback(this, label, checkbox); // Runs any script passed in through the callback
     return this;
   }
+
+  /*<label class="switch">
+      <input type="checkbox" class="switch-input">
+      <span class="switch-label" data-on="On" data-off="Off"></span>
+      <span class="switch-handle"></span>
+    </label>*/
+  addSwitch(callback = () => {}) {
+    const label = this.#createElement('label', { className: 'bm-switch' });
+    const checkbox = this.#createElement('input', {'type': 'checkbox'}, { className: 'bm-switch-input' });
+    const spanF = this.#createElement('span', {}, { 'data-on': 'On', 'data-off': 'Off', className: 'bm-switch-label' })
+    const spanS = this.#createElement('span', {}, { className: 'bm-switch-handle' } )
+    label.insertBefore(spanS, label.firstChild);
+    label.insertBefore(spanF, label.firstChild);
+    label.insertBefore(checkbox, label.firstChild);
+    this.buildElement();
+    callback(this, label, checkbox, spanF, spanS);
+    return this;
+  }
   
   /** Adds a `button` to the overlay.
    * This `button` element will have properties shared between all `button` elements in the overlay.
