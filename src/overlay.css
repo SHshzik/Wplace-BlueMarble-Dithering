@@ -276,6 +276,18 @@ div:has(> #bm-input-file-template),
   text-decoration: line-through;
 }
 
+/* switch */
+.bm-container {
+  margin: 50px auto;
+  width: 280px;
+  text-align: center;
+}
+
+.bm-container > .bm-switch {
+  display: block;
+  margin: 12px auto;
+}
+
 .bm-switch {
   position: relative;
   display: inline-block;

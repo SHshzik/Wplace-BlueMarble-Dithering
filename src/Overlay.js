@@ -340,12 +340,17 @@ export default class Overlay {
       <span class="switch-handle"></span>
     </label>*/
   addSwitch(callback = () => {}) {
-    const label = this.#createElement('label', { className: 'bm-switch' });
-    const checkbox = this.#createElement('input', {'type': 'checkbox'}, { className: 'bm-switch-input' });
-    const spanF = this.#createElement('span', {}, { 'data-on': 'On', 'data-off': 'Off', className: 'bm-switch-label' })
-    const spanS = this.#createElement('span', {}, { className: 'bm-switch-handle' } )
+    const label = this.#createElement('label', { 'className': 'bm-switch' });
+
+    const spanS = this.#createElement('span', {}, { 'className': 'bm-switch-handle' } )
     label.insertBefore(spanS, label.firstChild);
+    this.buildElement();
+
+    const spanF = this.#createElement('span', {}, { 'data-on': 'On', 'data-off': 'Off', 'className': 'bm-switch-label' })
     label.insertBefore(spanF, label.firstChild);
+    this.buildElement();
+
+    const checkbox = this.#createElement('input', {'type': 'checkbox'}, { 'className': 'bm-switch-input' });
     label.insertBefore(checkbox, label.firstChild);
     this.buildElement();
     callback(this, label, checkbox, spanF, spanS);

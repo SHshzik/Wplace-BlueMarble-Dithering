@@ -566,7 +566,9 @@ function buildOverlayMain() {
         .addDiv({'id': 'bm-colorfilter-list'}).buildElement()
       .buildElement()
       .addInputFile({'id': 'bm-input-file-template', 'textContent': 'Upload Template', 'accept': 'image/png, image/jpeg, image/webp, image/bmp, image/gif'}).buildElement()
-      .addSwitch()
+      .addDiv({ 'className': 'bm-container' })
+        .addSwitch()
+      .buildElement()
       .addDiv({'id': 'bm-contain-buttons-template'})
         .addButton({'id': 'bm-button-enable', 'textContent': 'Enable'}, (instance, button) => {
           button.onclick = () => {
