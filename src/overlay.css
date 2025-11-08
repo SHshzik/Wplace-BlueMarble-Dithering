@@ -403,3 +403,26 @@ div:has(> #bm-input-file-template),
 .bm-switch-green > .bm-switch-input:checked ~ .bm-switch-label {
   background: #4fb845;
 }
+
+.bm-switch {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 8px; /* Расстояние между переключателем и текстом */
+}
+
+.bm-switch-inner {
+  position: relative;
+  display: inline-block;
+  width: 56px;
+  height: 20px;
+  padding: 3px;
+  border-radius: 18px;
+}
+
+.bm-switch-text {
+  font-size: 14px;
+  color: #333;
+  user-select: none;
+}
+

@@ -334,30 +334,28 @@ export default class Overlay {
     return this;
   }
 
-  /*<label class="switch">
-      <input type="checkbox" class="switch-input">
-      <span class="switch-label" data-on="On" data-off="Off"></span>
-      <span class="switch-handle"></span>
+  /*<label class="bm-switch">
+      <span class="bm-switch-inner">
+        <input type="checkbox" class="bm-switch-input">
+        <span class="bm-switch-label" data-on="On" data-off="Off"></span>
+        <span class="bm-switch-handle"></span>
+      </span>
+      <span class="bm-switch-text">Мой текст справа</span>
     </label>*/
   addSwitch(callback = () => {}) {
     const label = this.#createElement('label', {'className': 'bm-switch'});
+      this.addDiv({ 'className': 'bm-switch-inner' })
+        this.#createElement('input', {'type': 'checkbox'}, {'className': 'bm-switch-input'});
+          this.buildElement();
+        this.#createElement('span', {}, {'data-on': 'On', 'data-off': 'Off', 'className': 'bm-switch-label'})
+          this.buildElement();
+        this.#createElement('span', {}, {'className': 'bm-switch-handle'})
+          this.buildElement();
+        this.buildElement();
+      this.#createElement('span', {}, {'className': 'bm-switch-text', 'textContent': 'Подсветка'})
+        this.buildElement();
 
-    const spanT = this.#createElement('span', {}, {'className': 'bm-switch-text', 'textContent': 'Подсветка'})
-    label.insertBefore(spanT, label.firstChild);
-    this.buildElement();
-    // <span class="bm-switch-text">Мой текст справа</span>
-
-    const spanS = this.#createElement('span', {}, {'className': 'bm-switch-handle'})
-    label.insertBefore(spanS, label.firstChild);
-    this.buildElement();
-
-    const spanF = this.#createElement('span', {}, {'data-on': 'On', 'data-off': 'Off', 'className': 'bm-switch-label'})
-    label.insertBefore(spanF, label.firstChild);
-    this.buildElement();
-
-    const checkbox = this.#createElement('input', {'type': 'checkbox'}, {'className': 'bm-switch-input'});
-    label.insertBefore(checkbox, label.firstChild);
-    this.buildElement();
+    // this.buildElement();
     callback(this, label, checkbox, spanF, spanS);
     return this;
   }
