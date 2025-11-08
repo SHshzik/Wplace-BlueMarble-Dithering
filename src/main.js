@@ -267,7 +267,7 @@ function buildOverlayMain() {
     } catch (_) {}
   };
 
-  overlayMain.addDiv({'id': 'bm-overlay', 'style': 'top: 10px; right: 75px; background-color: rgb(125, 56, 57) !important;'})
+  overlayMain.addDiv({'id': 'bm-overlay', 'style': 'top: 10px; right: 75px'})
     .addDiv({'id': 'bm-contain-header'})
       .addDiv({'id': 'bm-bar-drag'}).buildElement()
       .addImg({'alt': 'Blue Marble Icon - Click to minimize/maximize', 'src': 'https://raw.githubusercontent.com/SwingTheVine/Wplace-BlueMarble/main/dist/assets/Favicon.png', 'style': 'cursor: pointer;'}, 
