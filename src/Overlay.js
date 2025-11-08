@@ -345,7 +345,7 @@ export default class Overlay {
   addSwitch(callback = () => {}) {
     const label = this.#createElement('label', {'className': 'bm-switch'});
       this.addDiv({ 'className': 'bm-switch-inner' })
-        this.#createElement('input', {'type': 'checkbox'}, {'className': 'bm-switch-input'});
+        const checkbox = this.#createElement('input', {'type': 'checkbox'}, {'className': 'bm-switch-input'});
           this.buildElement();
         this.#createElement('span', {}, {'data-on': 'On', 'data-off': 'Off', 'className': 'bm-switch-label'})
           this.buildElement();
@@ -356,7 +356,7 @@ export default class Overlay {
         this.buildElement();
 
     // this.buildElement();
-    callback(this, label, checkbox, spanF, spanS);
+    callback(this, label, checkbox);
     return this;
   }
 

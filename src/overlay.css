@@ -285,7 +285,7 @@ div:has(> #bm-input-file-template),
   position: relative;
   /*display: inline-block;*/
   vertical-align: top;
-  width: 56px;
+  /*width: 56px;*/
   height: 20px;
   padding: 3px;
   border-radius: 18px;
