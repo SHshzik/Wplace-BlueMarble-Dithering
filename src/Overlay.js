@@ -346,8 +346,11 @@ export default class Overlay {
     const label = this.#createElement('label', {'className': 'bm-switch'});
       this.addDiv({ 'className': 'bm-switch-inner' })
         const checkbox = this.#createElement('input', {'type': 'checkbox'}, {'className': 'bm-switch-input'});
+        checkbox.checked = true;
           this.buildElement();
-        this.#createElement('span', {}, {'data-on': 'On', 'data-off': 'Off', 'className': 'bm-switch-label'})
+        const span = this.#createElement('span', {}, {'className': 'bm-switch-label'})
+        span.dataset.on = 'On'
+        span.dataset.off = 'Off'
           this.buildElement();
         this.#createElement('span', {}, {'className': 'bm-switch-handle'})
           this.buildElement();

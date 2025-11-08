@@ -18,6 +18,7 @@ export default class ApiManager {
     this.disableAll = false; // Should the entire userscript be disabled?
     this.coordsTilePixel = []; // Contains the last detected tile/pixel coordinate pair requested
     this.templateCoordsTilePixel = []; // Contains the last "enabled" template coords
+    this.highlightEnable = true;
   }
 
   /** Determines if the spontaneously received response is something we want.
@@ -128,8 +129,9 @@ export default class ApiManager {
           let templateBlob = null
           templateBlob = await this.templateManager.drawTemplateOnTile(blobData, tileCoordsTile);
 
-          // const highlightSelected
-          templateBlob = await this.templateManager.drawHighlightOnTile(blobData, templateBlob, tileCoordsTile)
+          if (this.highlightEnable) {
+            templateBlob = await this.templateManager.drawHighlightOnTile(blobData, templateBlob, tileCoordsTile)
+          }
 
           window.postMessage({
             source: 'blue-marble',
@@ -210,5 +212,13 @@ export default class ApiManager {
     if (/Linux/i.test(ua)) return "Linux";
 
     return "Unknown";
+  }
+
+  enableHighlight() {
+    this.highlightEnable = true;
+  }
+
+  disableHighlight() {
+    this.highlightEnable = false;
   }
 }

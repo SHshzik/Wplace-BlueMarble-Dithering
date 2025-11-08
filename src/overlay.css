@@ -422,7 +422,7 @@ div:has(> #bm-input-file-template),
 
 .bm-switch-text {
   font-size: 14px;
-  color: #333;
+  color: #fff;
   user-select: none;
 }
 
