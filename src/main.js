@@ -567,7 +567,7 @@ function buildOverlayMain() {
       .buildElement()
       .addInputFile({'id': 'bm-input-file-template', 'textContent': 'Upload Template', 'accept': 'image/png, image/jpeg, image/webp, image/bmp, image/gif'}).buildElement()
       .addDiv({ 'className': 'bm-container' })
-        .addSwitch()
+        .addSwitch().buildElement()
       .buildElement()
       .addDiv({'id': 'bm-contain-buttons-template'})
         .addButton({'id': 'bm-button-enable', 'textContent': 'Enable'}, (instance, button) => {

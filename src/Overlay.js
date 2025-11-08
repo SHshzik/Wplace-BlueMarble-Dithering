@@ -340,23 +340,28 @@ export default class Overlay {
       <span class="switch-handle"></span>
     </label>*/
   addSwitch(callback = () => {}) {
-    const label = this.#createElement('label', { 'className': 'bm-switch' });
+    const label = this.#createElement('label', {'className': 'bm-switch'});
 
-    const spanS = this.#createElement('span', {}, { 'className': 'bm-switch-handle' } )
+    const spanT = this.#createElement('span', {}, {'className': 'bm-switch-text', 'textContent': 'Подсветка'})
+    label.insertBefore(spanT, label.firstChild);
+    this.buildElement();
+    // <span class="bm-switch-text">Мой текст справа</span>
+
+    const spanS = this.#createElement('span', {}, {'className': 'bm-switch-handle'})
     label.insertBefore(spanS, label.firstChild);
     this.buildElement();
 
-    const spanF = this.#createElement('span', {}, { 'data-on': 'On', 'data-off': 'Off', 'className': 'bm-switch-label' })
+    const spanF = this.#createElement('span', {}, {'data-on': 'On', 'data-off': 'Off', 'className': 'bm-switch-label'})
     label.insertBefore(spanF, label.firstChild);
     this.buildElement();
 
-    const checkbox = this.#createElement('input', {'type': 'checkbox'}, { 'className': 'bm-switch-input' });
+    const checkbox = this.#createElement('input', {'type': 'checkbox'}, {'className': 'bm-switch-input'});
     label.insertBefore(checkbox, label.firstChild);
     this.buildElement();
     callback(this, label, checkbox, spanF, spanS);
     return this;
   }
-  
+
   /** Adds a `button` to the overlay.
    * This `button` element will have properties shared between all `button` elements in the overlay.
    * You can override the shared properties by using a callback.
