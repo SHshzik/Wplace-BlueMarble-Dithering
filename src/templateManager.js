@@ -216,7 +216,7 @@ export default class TemplateManager {
    * @returns {Array<Template>} - Templates that exist, should be drawn and touch on the specified tile.
    * @since 0.85.0
    */
-  async templatesToDrawOnTile(tileCoords) {
+  templatesToDrawOnTile(tileCoords) {
     // Return early if no templates should be drawn
     if (!this.templatesShouldBeDrawn) return [];
 
@@ -272,11 +272,12 @@ export default class TemplateManager {
    * @since 0.65.77
    */
   async drawTemplateOnTile(tileBlob, tileCoords) {
-    const templatesToDraw = await this.templatesToDrawOnTile(tileCoords);
+    const logger = this.logger.withPrefix('drawTemplateOnTile');
+    const templatesToDraw = this.templatesToDrawOnTile(tileCoords);
     if (templatesToDraw.length === 0) { return tileBlob; }
 
-    const templateCount = templatesToDraw?.length || 0; // Number of templates to draw on this tile
-    console.log(`templateCount = ${templateCount}`);
+    const templateCount = templatesToDraw.length || 0; // Number of templates to draw on this tile
+    logger.log('templateCount', templateCount);
 
     const drawSize = this.tileSize * this.drawMult; // Calculate draw multiplier for scaling
 
@@ -311,8 +312,8 @@ export default class TemplateManager {
 
     // For each template in this tile, draw them.
     for (const template of templatesToDraw) {
-      console.log(`Template:`);
-      console.log(template);
+      const iLogger = logger.withPrefix('Template')
+      iLogger.log(template);
 
       // Compute stats by sampling template center pixels against tile pixels,
       // honoring color enable/disable from the active template's palette
@@ -419,7 +420,6 @@ export default class TemplateManager {
 
       // Draw the template overlay for visual guidance, honoring color filter
       try {
-
         const activeTemplate = this.templatesArray?.[0]; // Get the first template
         const palette = activeTemplate?.colorPalette || {}; // Obtain the color palette of the template
         const hasDisabled = Object.values(palette).some(v => v?.enabled === false); // Check if any color is disabled
@@ -429,7 +429,7 @@ export default class TemplateManager {
           context.drawImage(template.bitmap, Number(template.pixelCoords[0]) * this.drawMult, Number(template.pixelCoords[1]) * this.drawMult);
         } else {
           // ELSE we need to apply the color filter
-          console.log('Applying color filter...');
+          iLogger.log('Applying color filter...');
 
           const tempW = template.bitmap.width;
           const tempH = template.bitmap.height;
@@ -492,7 +492,7 @@ export default class TemplateManager {
     // Save per-tile stats and compute global aggregates across all processed tiles
     if (templateCount > 0) {
       const tileKey = tileCoords; // already padded string "xxxx,yyyy"
-      this.tileProgress.set(tileKey, {
+      this.tileProgress.set(tileKey.join(','), {
         painted: paintedCount,
         required: requiredCount,
         wrong: wrongCount,
@@ -502,6 +502,7 @@ export default class TemplateManager {
       let aggPainted = 0;
       let aggRequiredTiles = 0;
       let aggWrong = 0;
+      logger.info('this.tileProgress', this.tileProgress)
       for (const stats of this.tileProgress.values()) {
         aggPainted += stats.painted || 0;
         aggRequiredTiles += stats.required || 0;
@@ -510,18 +511,23 @@ export default class TemplateManager {
 
       // Determine total required across all templates
       // Prefer precomputed per-template required counts; fall back to sum of processed tiles
-      const totalRequiredTemplates = this.templatesArray.reduce((sum, t) =>
-        sum + (t.requiredPixelCount || t.pixelCount || 0), 0);
+      const totalRequiredTemplates = this.templatesArray.reduce((sum, t) => sum + (t.requiredPixelCount || t.pixelCount || 0), 0);
       const totalRequired = totalRequiredTemplates > 0 ? totalRequiredTemplates : aggRequiredTiles;
 
       // Turns numbers into formatted number strings. E.g., 1234 -> 1,234 OR 1.234 based on location of user
       const paintedStr = new Intl.NumberFormat().format(aggPainted);
       const requiredStr = new Intl.NumberFormat().format(totalRequired);
       const wrongStr = new Intl.NumberFormat().format(totalRequired - aggPainted); // Used to be aggWrong, but that is bugged
+      let progress = (aggPainted / totalRequired) * 100;
+      progress = Math.round(progress * 100) / 100;
 
-      this.overlay.handleDisplayStatus(
-        `Displaying ${templateCount} template${templateCount == 1 ? '' : 's'}.\nPainted ${paintedStr} / ${requiredStr} • Wrong ${wrongStr}`
-      );
+      const info = [
+        `Displaying ${templateCount} template${templateCount === 1 ? '' : 's'}.`,
+        `Покрашено ${paintedStr} / ${requiredStr}`,
+        `Осталось ${wrongStr}`,
+        `Прогресс: ${progress}%`
+      ]
+      this.overlay.handleDisplayStatus(info.join('\n'));
     } else {
       this.overlay.handleDisplayStatus(`Displaying ${templateCount} templates.`);
     }
@@ -537,7 +543,7 @@ export default class TemplateManager {
    * @since 0.65.77
    */
   async drawHighlightOnTile(tileBlob, baseBlob, tileCoords) {
-    const templatesToDraw = await this.templatesToDrawOnTile(tileCoords);
+    const templatesToDraw = this.templatesToDrawOnTile(tileCoords);
     if (templatesToDraw.size == 0) { return baseBlob; }
 
     const drawSize = this.tileSize * this.drawMult; // Calculate draw multiplier for scaling

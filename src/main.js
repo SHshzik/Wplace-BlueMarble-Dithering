@@ -3,7 +3,7 @@
  */
 
 import Overlay from './Overlay.js';
-import Observers from './observers.js';
+// import Observers from './observers.js';
 import ApiManager from './apiManager.js';
 import TemplateManager from './templateManager.js';
 import { consoleLog, consoleWarn, selectAllCoordinateInputs } from './utils.js';
@@ -172,7 +172,8 @@ stylesheetLink.onload = function () {
 document.head?.appendChild(stylesheetLink);
 
 // CONSTRUCTORS
-const observers = new Observers(); // Constructs a new Observers object
+// const observers = new Observers(); // Constructs a new Observers object
+
 const overlayMain = new Overlay(name, version); // Constructs a new Overlay object for the main overlay
 const overlayTabTemplate = new Overlay(name, version); // Constructs a Overlay object for the template tab
 const templateManager = new TemplateManager(name, version, overlayMain); // Constructs a new TemplateManager object
