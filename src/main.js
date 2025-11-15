@@ -301,6 +301,7 @@ function buildOverlayMain() {
             const enableButton = document.querySelector('#bm-button-enable');
             const disableButton = document.querySelector('#bm-button-disable');
             const coordInputs = document.querySelectorAll('#bm-contain-coords input');
+            const hlTgl = document.querySelector('.bm-hl-toggle');
 
             // Pre-restore original dimensions when switching to maximized state
             // This ensures smooth transition and prevents layout issues
@@ -360,6 +361,10 @@ function buildOverlayMain() {
               // Hide disable templates button
               if (disableButton) {
                 disableButton.style.display = 'none';
+              }
+
+              if (hlTgl) {
+                hlTgl.style.display = 'none';
               }
 
               // Hide all coordinate input fields individually (failsafe)
@@ -426,6 +431,10 @@ function buildOverlayMain() {
               if (disableButton) {
                 disableButton.style.display = '';
                 disableButton.style.marginTop = '';
+              }
+
+              if (hlTgl) {
+                hlTgl.style.display = '';
               }
 
               // Restore all coordinate input fields
@@ -566,7 +575,7 @@ function buildOverlayMain() {
         .addDiv({'id': 'bm-colorfilter-list'}).buildElement()
       .buildElement()
       .addInputFile({'id': 'bm-input-file-template', 'textContent': 'Upload Template', 'accept': 'image/png, image/jpeg, image/webp, image/bmp, image/gif'}).buildElement()
-      .addDiv({ 'className': 'bm-container' })
+      .addDiv({ 'className': 'bm-container bm-hl-toggle' })
         .addSwitch((overlay, label, checkbox) => {
           checkbox.addEventListener('change', () => {
             if (checkbox.checked) {
