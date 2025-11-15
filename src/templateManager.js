@@ -1,4 +1,5 @@
 import Template from "./Template";
+import Logger from './logger';
 import { base64ToUint8, numberToEncoded } from "./utils";
 
 /** Manages the template system.
@@ -40,7 +41,7 @@ export default class TemplateManager {
    * @since 0.55.8
    */
   constructor(name, version, overlay) {
-
+    this.logger = new Logger('TemplateManager');
     // Meta
     this.name = name; // Name of userscript
     this.version = version; // Version of userscript
@@ -317,7 +318,6 @@ export default class TemplateManager {
       // honoring color enable/disable from the active template's palette
       if (tilePixels) {
         try {
-
           const tempWidth = template.bitmap.width;
           const tempHeight = template.bitmap.height;
           const tempCanvas = new OffscreenCanvas(tempWidth, tempHeight);
@@ -726,9 +726,8 @@ export default class TemplateManager {
    * @param {string} json - The JSON string to parse
    */
   importJSON(json) {
-
-    console.log(`Importing JSON...`);
-    console.log(json);
+    const logger = this.logger.withPrefix('importJSON')
+    logger.log('Importing JSON...', json);
 
     // If the passed in JSON is a Blue Marble template object...
     if (json?.whoami === 'BlueMarble' || json?.whoami === 'RedMarble') {
@@ -740,110 +739,96 @@ export default class TemplateManager {
    * @param {string} json - The JSON string to parse
    * @since 0.72.13
    */
-  async #parseBlueMarble(json) {
-
-    console.log(`Parsing BlueMarble...`);
-
-    const templates = json.templates;
-
-    console.log(`BlueMarble length: ${Object.keys(templates).length}`);
+  async #parseBlueMarble({ templates }) {
+    const logger = this.logger.withPrefix('#parseBlueMarble')
+    logger.log('Parsing BlueMarble...');
+    logger.log(`BlueMarble length: ${Object.keys(templates).length}`);
 
     if (Object.keys(templates).length > 0) {
+      for (const [templateKey, { name, tiles }] of Object.entries(templates)) {
+        logger.log('templateKey', templateKey);
+        const iLogger = logger.withPrefix('templateKey')
 
-      for (const template in templates) {
+        const templateKeyArray = templateKey.split(' '); // E.g., "0 $Z" -> ["0", "$Z"]
+        const sortID = Number(templateKeyArray?.[0]); // Sort ID of the template
+        const authorID = templateKeyArray?.[1] || '0'; // User ID of the person who exported the template
+        const displayName = name || `Template ${sortID || ''}`; // Display name of the template
+        //const coords = templateValue?.coords?.split(',').map(Number); // "1,2,3,4" -> [1, 2, 3, 4]
+        const tilesbase64 = tiles;
+        const templateTiles = {}; // Stores the template bitmap tiles for each tile.
+        let requiredPixelCount = 0; // Global required pixel count for this imported template
+        const paletteMap = new Map(); // Accumulates color counts across tiles (center pixels only)
 
-        const templateKey = template;
-        const templateValue = templates[template];
-        console.log(templateKey);
+        for (const [tile, encodedTemplateBase64] of Object.entries(tilesbase64)) {
+          iLogger.log('tile', tile);
+          const templateUint8Array = base64ToUint8(encodedTemplateBase64); // Base 64 -> Uint8Array
 
-        if (templates.hasOwnProperty(template)) {
+          const templateBlob = new Blob([templateUint8Array], { type: "image/png" }); // Uint8Array -> Blob
+          const templateBitmap = await createImageBitmap(templateBlob) // Blob -> Bitmap
+          templateTiles[tile] = templateBitmap;
 
-          const templateKeyArray = templateKey.split(' '); // E.g., "0 $Z" -> ["0", "$Z"]
-          const sortID = Number(templateKeyArray?.[0]); // Sort ID of the template
-          const authorID = templateKeyArray?.[1] || '0'; // User ID of the person who exported the template
-          const displayName = templateValue.name || `Template ${sortID || ''}`; // Display name of the template
-          //const coords = templateValue?.coords?.split(',').map(Number); // "1,2,3,4" -> [1, 2, 3, 4]
-          const tilesbase64 = templateValue.tiles;
-          const templateTiles = {}; // Stores the template bitmap tiles for each tile.
-          let requiredPixelCount = 0; // Global required pixel count for this imported template
-          const paletteMap = new Map(); // Accumulates color counts across tiles (center pixels only)
+          // Count required pixels in this bitmap (center pixels with alpha >= 64 and not #deface)
+          try {
+            const w = templateBitmap.width;
+            const h = templateBitmap.height;
+            const c = new OffscreenCanvas(w, h);
+            const cx = c.getContext('2d', { willReadFrequently: true });
+            cx.imageSmoothingEnabled = false;
+            cx.clearRect(0, 0, w, h);
+            cx.drawImage(templateBitmap, 0, 0);
+            const data = cx.getImageData(0, 0, w, h).data;
+            for (let y = 0; y < h; y++) {
+              for (let x = 0; x < w; x++) {
+                // Only count center pixels of 3x blocks
+                if ((x % this.drawMult) !== 1 || (y % this.drawMult) !== 1) { continue; }
+                const idx = (y * w + x) * 4;
+                const r = data[idx];
+                const g = data[idx + 1];
+                const b = data[idx + 2];
+                const a = data[idx + 3];
+                if (a < 64) { continue; }
+                if (r === 222 && g === 250 && b === 206) { continue; }
+                requiredPixelCount++;
+              }
+            }
+          } catch (e) {
+            console.warn('Failed to count required pixels for imported tile', e);
+          }
+        }
 
-          for (const tile in tilesbase64) {
-            console.log(tile);
-            if (tilesbase64.hasOwnProperty(tile)) {
-              const encodedTemplateBase64 = tilesbase64[tile];
-              const templateUint8Array = base64ToUint8(encodedTemplateBase64); // Base 64 -> Uint8Array
-
-              const templateBlob = new Blob([templateUint8Array], { type: "image/png" }); // Uint8Array -> Blob
-              const templateBitmap = await createImageBitmap(templateBlob) // Blob -> Bitmap
-              templateTiles[tile] = templateBitmap;
-
-              // Count required pixels in this bitmap (center pixels with alpha >= 64 and not #deface)
-              try {
-                const w = templateBitmap.width;
-                const h = templateBitmap.height;
-                const c = new OffscreenCanvas(w, h);
-                const cx = c.getContext('2d', { willReadFrequently: true });
-                cx.imageSmoothingEnabled = false;
-                cx.clearRect(0, 0, w, h);
-                cx.drawImage(templateBitmap, 0, 0);
-                const data = cx.getImageData(0, 0, w, h).data;
-                for (let y = 0; y < h; y++) {
-                  for (let x = 0; x < w; x++) {
-                    // Only count center pixels of 3x blocks
-                    if ((x % this.drawMult) !== 1 || (y % this.drawMult) !== 1) { continue; }
-                    const idx = (y * w + x) * 4;
-                    const r = data[idx];
-                    const g = data[idx + 1];
-                    const b = data[idx + 2];
-                    const a = data[idx + 3];
-                    if (a < 64) { continue; }
-                    if (r === 222 && g === 250 && b === 206) { continue; }
-                    requiredPixelCount++;
-                    const key = activeTemplate.allowedColorsSet.has(`${r},${g},${b}`) ? `${r},${g},${b}` : 'other';
-                    paletteMap.set(key, (paletteMap.get(key) || 0) + 1);
-                  }
-                }
-              } catch (e) {
-                console.warn('Failed to count required pixels for imported tile', e);
+        // Creates a new Template class instance
+        const template = new Template({
+          displayName: displayName,
+          sortID: sortID || this.templatesArray?.length || 0,
+          authorID: authorID || '',
+          //coords: coords
+        });
+        template.chunked = templateTiles;
+        template.requiredPixelCount = requiredPixelCount;
+        // Construct colorPalette from paletteMap
+        const paletteObj = {};
+        for (const [key, count] of paletteMap.entries()) { paletteObj[key] = { count, enabled: true }; }
+        template.colorPalette = paletteObj;
+        // Populate tilePrefixes for fast-scoping
+        try { Object.keys(templateTiles).forEach(k => { template.tilePrefixes?.add(k.split(',').slice(0,2).join(',')); }); } catch (_) {}
+        // Merge persisted palette (enabled/disabled) if present
+        try {
+          const persisted = templates?.[templateKey]?.palette;
+          if (persisted) {
+            for (const [rgb, meta] of Object.entries(persisted)) {
+              if (!template.colorPalette[rgb]) {
+                template.colorPalette[rgb] = { count: meta?.count || 0, enabled: !!meta?.enabled };
+              } else {
+                template.colorPalette[rgb].enabled = !!meta?.enabled;
               }
             }
           }
-
-          // Creates a new Template class instance
-          const template = new Template({
-            displayName: displayName,
-            sortID: sortID || this.templatesArray?.length || 0,
-            authorID: authorID || '',
-            //coords: coords
-          });
-          template.chunked = templateTiles;
-          template.requiredPixelCount = requiredPixelCount;
-          // Construct colorPalette from paletteMap
-          const paletteObj = {};
-          for (const [key, count] of paletteMap.entries()) { paletteObj[key] = { count, enabled: true }; }
-          template.colorPalette = paletteObj;
-          // Populate tilePrefixes for fast-scoping
-          try { Object.keys(templateTiles).forEach(k => { template.tilePrefixes?.add(k.split(',').slice(0,2).join(',')); }); } catch (_) {}
-          // Merge persisted palette (enabled/disabled) if present
-          try {
-            const persisted = templates?.[templateKey]?.palette;
-            if (persisted) {
-              for (const [rgb, meta] of Object.entries(persisted)) {
-                if (!template.colorPalette[rgb]) {
-                  template.colorPalette[rgb] = { count: meta?.count || 0, enabled: !!meta?.enabled };
-                } else {
-                  template.colorPalette[rgb].enabled = !!meta?.enabled;
-                }
-              }
-            }
-          } catch (_) {}
-          // Store storageKey for later writes
-          template.storageKey = templateKey;
-          this.templatesArray.push(template);
-          console.log(this.templatesArray);
-          console.log(`^^^ This ^^^`);
-        }
+        } catch (_) {}
+        // Store storageKey for later writes
+        template.storageKey = templateKey;
+        this.templatesArray.push(template);
+        logger.log('this.templatesArray', this.templatesArray);
+        logger.log(`^^^ This ^^^`);
       }
       // After importing templates from storage, reveal color UI and request palette list build
       try {

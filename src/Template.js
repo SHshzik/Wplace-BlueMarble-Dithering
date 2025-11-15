@@ -1,4 +1,5 @@
 import { uint8ToBase64, colorpalette } from "./utils";
+import Logger from './logger';
 
 /** An instance of a template.
  * Handles all mathematics, manipulation, and analysis regarding a single template.
@@ -30,6 +31,7 @@ export default class Template {
     chunked = null,
     tileSize = 1000,
   } = {}) {
+    this.logger = new Logger('Template')
     this.displayName = displayName;
     this.sortID = sortID;
     this.authorID = authorID;
@@ -81,7 +83,7 @@ export default class Template {
       this.rgbToMeta.set(keyOther, { id: 'other', premium: false, name: 'Other' });
     } catch (ignored) {}
 
-    console.log('Allowed colors for template:', this.allowedColorsSet);
+    this.logger.log('Allowed colors for template:', this.allowedColorsSet);
   }
 
   /** Creates chunks of the template for each tile.

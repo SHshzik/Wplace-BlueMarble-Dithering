@@ -31,7 +31,6 @@ function inject(callback) {
  * @since 0.11.15
  */
 inject(() => {
-
   const script = document.currentScript; // Gets the current script HTML Script Element
   const name = script?.getAttribute('bm-name') || 'Red Marble'; // Gets the name value that was passed in. Defaults to "Blue Marble" if nothing was found
   const consoleStyle = script?.getAttribute('bm-cStyle') || ''; // Gets the console style value that was passed in. Defaults to no styling if nothing was found
@@ -162,7 +161,7 @@ const cssOverlay = GM_getResourceText("CSS-BM-File");
 GM_addStyle(cssOverlay);
 
 // Imports the Roboto Mono font family
-var stylesheetLink = document.createElement('link');
+const stylesheetLink = document.createElement('link');
 stylesheetLink.href = 'https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap';
 stylesheetLink.rel = 'preload';
 stylesheetLink.as = 'style';
@@ -182,18 +181,15 @@ const apiManager = new ApiManager(templateManager); // Constructs a new ApiManag
 overlayMain.setApiManager(apiManager); // Sets the API manager
 
 const storageTemplates = JSON.parse(GM_getValue('bmTemplates', '{}'));
-console.log(storageTemplates);
 templateManager.importJSON(storageTemplates); // Loads the templates
 
 const userSettings = JSON.parse(GM_getValue('bmUserSettings', '{}')); // Loads the user settings
-console.log(userSettings);
-console.log(Object.keys(userSettings).length);
-if (Object.keys(userSettings).length == 0) {
+console.log('main', 'userSettings', userSettings);
+console.log('main', 'Object.keys(userSettings).length', Object.keys(userSettings).length);
+if (Object.keys(userSettings).length === 0) {
   const uuid = crypto.randomUUID(); // Generates a random UUID
-  console.log(uuid);
-  GM.setValue('bmUserSettings', JSON.stringify({
-    'uuid': uuid
-  }));
+  console.log('main', 'uuid', uuid);
+  GM.setValue('bmUserSettings', JSON.stringify({'uuid': uuid}));
 }
 
 buildOverlayMain(); // Builds the main overlay
