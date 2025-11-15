@@ -517,14 +517,19 @@ export default class TemplateManager {
       // Turns numbers into formatted number strings. E.g., 1234 -> 1,234 OR 1.234 based on location of user
       const paintedStr = new Intl.NumberFormat().format(aggPainted);
       const requiredStr = new Intl.NumberFormat().format(totalRequired);
-      const wrongStr = new Intl.NumberFormat().format(totalRequired - aggPainted); // Used to be aggWrong, but that is bugged
+      const left = totalRequired - aggPainted
+      const wrongStr = new Intl.NumberFormat().format(left); // Used to be aggWrong, but that is bugged
       let progress = (aggPainted / totalRequired) * 100;
       progress = Math.round(progress * 100) / 100;
+
+      const leftSec = left / 2
+      const leftDays = Math.floor(leftSec / 1440);
+      const leftHours = Math.floor((leftSec % 1440) / 60);
 
       const info = [
         `Displaying ${templateCount} template${templateCount === 1 ? '' : 's'}.`,
         `Покрашено ${paintedStr} / ${requiredStr}`,
-        `Осталось ${wrongStr}`,
+        `Осталось ${wrongStr} (${leftDays}д ${leftHours}ч)`,
         `Прогресс: ${progress}%`
       ]
       this.overlay.handleDisplayStatus(info.join('\n'));
