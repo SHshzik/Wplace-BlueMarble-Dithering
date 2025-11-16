@@ -482,6 +482,9 @@ function buildOverlayMain() {
       .addP({'id': 'bm-user-name', 'textContent': 'Username:'}).buildElement()
       .addP({'id': 'bm-user-droplets', 'textContent': 'Droplets:'}).buildElement()
       .addP({'id': 'bm-user-nextlevel', 'textContent': 'Next level in...'}).buildElement()
+      .addDiv({ 'id': 'bm-user-fullcharge' })
+        .addP({'id': 'bm-user-fullcharge-content', 'textContent': 'Full Charge in...'}).buildElement()
+      .buildElement()
     .buildElement()
 
     .addHr().buildElement()
