@@ -7,6 +7,7 @@ import Overlay from './Overlay.js';
 import ApiManager from './apiManager.js';
 import TemplateManager from './templateManager.js';
 import { consoleLog, consoleWarn, selectAllCoordinateInputs } from './utils.js';
+import Logger from './logger';
 
 const name = GM_info.script.name.toString(); // Name of userscript
 const version = GM_info.script.version.toString(); // Version of userscript
@@ -174,6 +175,7 @@ document.head?.appendChild(stylesheetLink);
 // CONSTRUCTORS
 // const observers = new Observers(); // Constructs a new Observers object
 
+const logger = new Logger('[main]')
 const overlayMain = new Overlay(name, version); // Constructs a new Overlay object for the main overlay
 const overlayTabTemplate = new Overlay(name, version); // Constructs a Overlay object for the template tab
 const templateManager = new TemplateManager(name, version, overlayMain); // Constructs a new TemplateManager object
@@ -552,6 +554,7 @@ function buildOverlayMain() {
       .buildElement()
       // Color filter UI
       .addDiv({'id': 'bm-contain-colorfilter', 'style': 'resize: vertical; height: 140px; overflow: auto; border: 1px solid rgba(255,255,255,0.1); padding: 4px; border-radius: 4px; display: none;'})
+        .addInput({ 'className': 'bm-filter-input' }).buildElement()
         .addDiv({'style': 'display: flex; gap: 6px; margin-bottom: 6px;'})
           .addButton({'id': 'bm-button-colors-enable-all', 'textContent': 'Enable All'}, (instance, button) => {
             button.onclick = () => {
@@ -649,9 +652,10 @@ function buildOverlayMain() {
       .buildElement()
     .buildElement()
   .buildOverlay(document.body);
-  //
+
   // ------- Helper: Build the color filter list -------
-  window.buildColorFilterList = function buildColorFilterList() {
+  window.buildColorFilterList = () => {
+    const iLogger = logger.withPrefix('buildColorFilterList')
     const listContainer = document.querySelector('#bm-colorfilter-list');
     const t = templateManager.templatesArray?.[0];
     if (!listContainer || !t?.colorPalette) {
@@ -660,8 +664,7 @@ function buildOverlayMain() {
     }
 
     listContainer.innerHTML = '';
-    const entries = Object.entries(t.colorPalette)
-      .sort((a,b) => b[1].count - a[1].count); // sort by frequency desc
+    const entries = Object.entries(t.colorPalette).sort((a,b) => b[1].count - a[1].count); // sort by frequency desc
 
     for (const [rgb, meta] of entries) {
       let row = document.createElement('div');
@@ -706,15 +709,13 @@ function buildOverlayMain() {
       toggle.addEventListener('change', () => {
         meta.enabled = toggle.checked;
         overlayMain.handleDisplayStatus(`${toggle.checked ? 'Enabled' : 'Disabled'} ${rgb}`);
-        try {
-          const t = templateManager.templatesArray?.[0];
-          const key = t?.storageKey;
-          if (t && key && templateManager.templatesJSON?.templates?.[key]) {
-            templateManager.templatesJSON.templates[key].palette = t.colorPalette;
-            // persist immediately
-            GM.setValue('bmTemplates', JSON.stringify(templateManager.templatesJSON));
-          }
-        } catch (_) {}
+        // try {
+        //   const t = templateManager.templatesArray?.[0];
+        //   const key = t?.storageKey;
+        //   if (t && key && templateManager.templatesJSON?.templates?.[key]) {
+        //     templateManager.templatesJSON.templates[key].palette = t.colorPalette;
+        //   }
+        // } catch (_) {}
       });
 
       row.appendChild(toggle);

@@ -452,9 +452,7 @@ export default class Overlay {
    * </body>
    */
   addInput(additionalProperties = {}, callback = () => {}) {
-
     const properties = {}; // Shared <input> DOM properties
-
     const input = this.#createElement('input', properties, additionalProperties); // Creates the <input> element
     callback(this, input); // Runs any script passed in through the callback
     return this;
