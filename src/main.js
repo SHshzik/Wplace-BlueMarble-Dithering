@@ -6,12 +6,13 @@ import Overlay from './Overlay.js';
 // import Observers from './observers.js';
 import ApiManager from './apiManager.js';
 import TemplateManager from './templateManager.js';
-import {consoleLog, consoleWarn, debounce, selectAllCoordinateInputs} from './utils.js';
+import {consoleLog, consoleWarn, debounce, selectAllCoordinateInputs, colorpalette} from './utils.js';
 import Logger from './logger';
 
 const name = GM_info.script.name.toString(); // Name of userscript
 const version = GM_info.script.version.toString(); // Version of userscript
 const consoleStyle = 'color: cornflowerblue;'; // The styling for the console logs
+window.loggerEnable = false;
 
 /** Injects code into the client
  * This code will execute outside of TamperMonkey's sandbox
@@ -556,8 +557,17 @@ function buildOverlayMain() {
       .addDiv({'id': 'bm-contain-colorfilter', 'style': 'resize: vertical; height: 140px; overflow: auto; border: 1px solid rgba(255,255,255,0.1); padding: 4px; border-radius: 4px; display: none;'})
         .addInput({ 'className': 'bm-filter-input', 'type': 'search' }, (instance, input) => {
           const onFilterChange = (value) => {
-            logger.log("Filter value:", value);
-            // твоя логика
+            const t = templateManager.templatesArray[0];
+            if (!t?.colorPalette) { return; }
+
+            const selected = colorpalette
+              .filter((el) => el.name.toLowerCase().includes(input.value.toLowerCase()))
+              .map(el => el.rgb.join(','))
+            Object.values(t.colorPalette).forEach(v => v.enabled = false);
+            Object.entries(t.colorPalette).filter(([rgb, meta]) => selected.includes(rgb)).forEach(([rgb, meta]) => meta.enabled = true);
+            buildColorFilterList();
+            // const t = instance.templateManager.templatesArray?.[0];
+            // logger.info(t.colorPalette);
           }
 
           input.addEventListener('input', debounce(e => {
@@ -665,6 +675,7 @@ function buildOverlayMain() {
   // ------- Helper: Build the color filter list -------
   window.buildColorFilterList = () => {
     const iLogger = logger.withPrefix('buildColorFilterList')
+    iLogger.log("call")
     const listContainer = document.querySelector('#bm-colorfilter-list');
     const t = templateManager.templatesArray?.[0];
     if (!listContainer || !t?.colorPalette) {
@@ -673,7 +684,16 @@ function buildOverlayMain() {
     }
 
     listContainer.innerHTML = '';
-    const entries = Object.entries(t.colorPalette).sort((a,b) => b[1].count - a[1].count); // sort by frequency desc
+    const entries = Object.entries(t.colorPalette).sort((a,b) => {
+      const aE = a[1].enabled;
+      const bE = b[1].enabled;
+
+      // 1) Сначала по enabled: true выше false
+      if (aE !== bE) return aE ? -1 : 1;
+
+      // 2) Если enabled одинаковый — сортируем по count desc
+      return b[1].count - a[1].count;
+    }); // sort by frequency desc
 
     for (const [rgb, meta] of entries) {
       let row = document.createElement('div');
@@ -718,13 +738,7 @@ function buildOverlayMain() {
       toggle.addEventListener('change', () => {
         meta.enabled = toggle.checked;
         overlayMain.handleDisplayStatus(`${toggle.checked ? 'Enabled' : 'Disabled'} ${rgb}`);
-        // try {
-        //   const t = templateManager.templatesArray?.[0];
-        //   const key = t?.storageKey;
-        //   if (t && key && templateManager.templatesJSON?.templates?.[key]) {
-        //     templateManager.templatesJSON.templates[key].palette = t.colorPalette;
-        //   }
-        // } catch (_) {}
+        window.buildColorFilterList()
       });
 
       row.appendChild(toggle);
