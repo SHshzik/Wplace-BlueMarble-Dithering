@@ -216,3 +216,12 @@ export const colorpalette = [
   { "id": 63, "premium": true,  "name": "Light Stone",   "rgb": [205, 197, 158] }
 ];
 // All entries include fixed id (index-based) and premium flag by design.
+
+export function debounce(fn, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+

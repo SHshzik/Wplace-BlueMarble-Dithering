@@ -6,7 +6,7 @@ import Overlay from './Overlay.js';
 // import Observers from './observers.js';
 import ApiManager from './apiManager.js';
 import TemplateManager from './templateManager.js';
-import { consoleLog, consoleWarn, selectAllCoordinateInputs } from './utils.js';
+import {consoleLog, consoleWarn, debounce, selectAllCoordinateInputs} from './utils.js';
 import Logger from './logger';
 
 const name = GM_info.script.name.toString(); // Name of userscript
@@ -554,7 +554,16 @@ function buildOverlayMain() {
       .buildElement()
       // Color filter UI
       .addDiv({'id': 'bm-contain-colorfilter', 'style': 'resize: vertical; height: 140px; overflow: auto; border: 1px solid rgba(255,255,255,0.1); padding: 4px; border-radius: 4px; display: none;'})
-        .addInput({ 'className': 'bm-filter-input' }).buildElement()
+        .addInput({ 'className': 'bm-filter-input', 'type': 'search' }, (instance, input) => {
+          const onFilterChange = (value) => {
+            logger.log("Filter value:", value);
+            // твоя логика
+          }
+
+          input.addEventListener('input', debounce(e => {
+            onFilterChange(e.target.value);
+          }, 2000));
+        }).buildElement()
         .addDiv({'style': 'display: flex; gap: 6px; margin-bottom: 6px;'})
           .addButton({'id': 'bm-button-colors-enable-all', 'textContent': 'Enable All'}, (instance, button) => {
             button.onclick = () => {

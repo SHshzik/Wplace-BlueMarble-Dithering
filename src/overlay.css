@@ -440,6 +440,11 @@ div:has(> #bm-input-file-template),
   font-size: 12px;
 }
 
+.bm-filter-input[type="search"]::-webkit-search-cancel-button {
+  filter: invert(1); /* делает крестик светлым */
+  cursor: pointer;
+}
+
 .bm-filter-input:focus {
   outline: none;
   border-color: rgba(255,255,255,0.3);
