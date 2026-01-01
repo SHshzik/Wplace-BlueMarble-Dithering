@@ -709,7 +709,20 @@ function buildOverlayMain() {
 
       let label = document.createElement('span');
       label.style.fontSize = '12px';
-      let labelText = `${meta.count.toLocaleString()}`;
+      const count = meta.count || 0;
+
+      // Aggregate painted pixels for this color across all processed tiles
+      let painted = 0;
+      try {
+        const tileColorProgress = templateManager.tileColorProgress;
+        if (tileColorProgress) {
+          for (const tileColorData of tileColorProgress.values()) {
+            painted += tileColorData[rgb] || 0;
+          }
+        }
+      } catch (ignored) {}
+      
+      let labelText = `${painted.toLocaleString()}/${count.toLocaleString()}`;
 
       // Special handling for "other" and "transparent"
       if (rgb === 'other') {

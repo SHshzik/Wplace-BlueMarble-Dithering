@@ -63,6 +63,7 @@ export default class TemplateManager {
     this.templatesJSON = null; // All templates currently loaded (JSON)
     this.templatesShouldBeDrawn = true; // Should ALL templates be drawn to the canvas?
     this.tileProgress = new Map(); // Tracks per-tile progress stats {painted, required, wrong}
+    this.tileColorProgress = new Map(); // Tracks per-tile per-color painted pixels: key "tileKey" -> { "r,g,b": count, ... }
   }
 
   /** Retrieves the pixel art canvas.
@@ -285,6 +286,7 @@ export default class TemplateManager {
     let paintedCount = 0;
     let wrongCount = 0;
     let requiredCount = 0;
+    const tileColorPainted = {}; // Track painted pixels per color for this tile: { "r,g,b": count, ... }
 
     const tileBitmap = await createImageBitmap(tileBlob);
 
@@ -394,6 +396,12 @@ export default class TemplateManager {
 
               requiredCount++;
 
+              // Get the color key for this template pixel
+              const activeTemplate = this.templatesArray?.[0];
+              const templateColorKey = activeTemplate?.allowedColorsSet?.has(`${templatePixelCenterRed},${templatePixelCenterGreen},${templatePixelCenterBlue}`) 
+                ? `${templatePixelCenterRed},${templatePixelCenterGreen},${templatePixelCenterBlue}` 
+                : 'other';
+
               // Strict center-pixel matching. Treat transparent tile pixels as unpainted (not wrong)
               const realPixelCenter = (gy * drawSize + gx) * 4;
               const realPixelRed = tilePixels[realPixelCenter];
@@ -408,6 +416,8 @@ export default class TemplateManager {
                 // ELSE IF the pixel matches the template center pixel color
               } else if (realPixelRed === templatePixelCenterRed && realPixelCenterGreen === templatePixelCenterGreen && realPixelCenterBlue === templatePixelCenterBlue) {
                 paintedCount++; // ...the pixel is painted correctly
+                // Increment painted count for this specific color in the current tile
+                tileColorPainted[templateColorKey] = (tileColorPainted[templateColorKey] || 0) + 1;
               } else {
                 wrongCount++; // ...the pixel is NOT painted correctly
               }
@@ -492,11 +502,14 @@ export default class TemplateManager {
     // Save per-tile stats and compute global aggregates across all processed tiles
     if (templateCount > 0) {
       const tileKey = tileCoords; // already padded string "xxxx,yyyy"
-      this.tileProgress.set(tileKey.join(','), {
+      const tileKeyStr = tileKey.join(',');
+      this.tileProgress.set(tileKeyStr, {
         painted: paintedCount,
         required: requiredCount,
         wrong: wrongCount,
       });
+      // Save per-tile per-color painted counts
+      this.tileColorProgress.set(tileKeyStr, tileColorPainted);
 
       // Aggregate painted/wrong across tiles we've processed
       let aggPainted = 0;
