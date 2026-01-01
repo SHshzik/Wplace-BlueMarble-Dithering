@@ -8,7 +8,6 @@
   padding: 10px;
   border-radius: 8px;
   z-index: 9000;
-  transition: all 0.3s ease, transform 0s;
   max-width: 300px;
   width: auto;
   /* Performance optimizations for smooth dragging */
@@ -25,10 +24,6 @@
 #bm-contain-automation, 
 #bm-contain-buttons-action {
   transition: opacity 0.2s ease, height 0.2s ease;
-}
-
-#bm-contain-colorfilter {
-  transition: none !important;
 }
 
 /* The entire overlay BUT it is cascading */
