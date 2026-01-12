@@ -41,7 +41,7 @@ export default class TemplateManager {
    * @since 0.55.8
    */
   constructor(name, version, overlay) {
-    this.logger = new Logger('TemplateManager');
+    this.logger = new Logger('TemplateManager').setEnabled(false);
     // Meta
     this.name = name; // Name of userscript
     this.version = version; // Version of userscript

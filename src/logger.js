@@ -2,11 +2,12 @@ export default class Logger {
   constructor(...prefixes) {
     this.prefixes = prefixes;
     this.separator = ' | ';
+    this.enabled = true;
   }
 
   withPrefix(...newPrefixes) {
     // Возвращаем новый инстанс с расширенными префиксами
-    return new Logger(...this.prefixes, ...newPrefixes);
+    return new Logger(...this.prefixes, ...newPrefixes).setEnabled(this.enabled);
   }
 
   _buildArgs(args) {
@@ -23,10 +24,24 @@ export default class Logger {
   }
 
   log(...args) {
+    if (!this.enabled) {
+      return
+    }
+
     console.log(...this._buildArgs(args));
   }
 
   info(...args) {
+    if (!this.enabled) {
+      return
+    }
+
     console.info(...this._buildArgs(args));
+  }
+
+  setEnabled(val) {
+    this.enabled = val;
+
+    return this
   }
 }

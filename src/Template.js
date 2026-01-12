@@ -31,7 +31,7 @@ export default class Template {
     chunked = null,
     tileSize = 1000,
   } = {}) {
-    this.logger = new Logger('Template')
+    this.logger = new Logger('Template').setEnabled(false);
     this.displayName = displayName;
     this.sortID = sortID;
     this.authorID = authorID;

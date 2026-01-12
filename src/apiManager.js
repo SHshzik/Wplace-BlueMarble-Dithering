@@ -18,7 +18,7 @@ export default class ApiManager {
     this.coordsTilePixel = []; // Contains the last detected tile/pixel coordinate pair requested
     this.templateCoordsTilePixel = []; // Contains the last "enabled" template coords
     this.highlightEnable = true;
-    this.logger = new Logger('ApiManager')
+    this.logger = new Logger('ApiManager').setEnabled(false);
   }
 
   /** Determines if the spontaneously received response is something we want.

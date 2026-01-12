@@ -176,7 +176,7 @@ document.head?.appendChild(stylesheetLink);
 // CONSTRUCTORS
 // const observers = new Observers(); // Constructs a new Observers object
 
-const logger = new Logger('[main]')
+const logger = new Logger('[main]').setEnabled(false);
 const overlayMain = new Overlay(name, version); // Constructs a new Overlay object for the main overlay
 const overlayTabTemplate = new Overlay(name, version); // Constructs a Overlay object for the template tab
 const templateManager = new TemplateManager(name, version, overlayMain); // Constructs a new TemplateManager object
@@ -188,8 +188,8 @@ const storageTemplates = JSON.parse(GM_getValue('bmTemplates', '{}'));
 templateManager.importJSON(storageTemplates); // Loads the templates
 
 const userSettings = JSON.parse(GM_getValue('bmUserSettings', '{}')); // Loads the user settings
-console.log('main', 'userSettings', userSettings);
-console.log('main', 'Object.keys(userSettings).length', Object.keys(userSettings).length);
+logger.log('main', 'userSettings', userSettings);
+logger.log('main', 'Object.keys(userSettings).length', Object.keys(userSettings).length);
 if (Object.keys(userSettings).length === 0) {
   const uuid = crypto.randomUUID(); // Generates a random UUID
   console.log('main', 'uuid', uuid);
@@ -252,6 +252,7 @@ function observeBlack() {
  * @since 0.58.3
  */
 function buildOverlayMain() {
+  const iLogger = logger.withPrefix('buildOverlayMain')
   let isMinimized = false; // Overlay state tracker (false = maximized, true = minimized)
   // Load last saved coordinates (if any)
   let savedCoords = {};
