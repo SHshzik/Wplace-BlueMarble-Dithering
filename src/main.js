@@ -9,6 +9,8 @@ import TemplateManager from './templateManager.js';
 import {consoleLog, consoleWarn, debounce, selectAllCoordinateInputs, colorpalette} from './utils.js';
 import Logger from './logger';
 
+const rmBreakPointName = 'rmBreakPoint'
+
 const name = GM_info.script.name.toString(); // Name of userscript
 const version = GM_info.script.version.toString(); // Version of userscript
 const consoleStyle = 'color: cornflowerblue;'; // The styling for the console logs
@@ -179,6 +181,7 @@ document.head?.appendChild(stylesheetLink);
 const logger = new Logger('[main]').setEnabled(false);
 const overlayMain = new Overlay(name, version); // Constructs a new Overlay object for the main overlay
 const overlayTabTemplate = new Overlay(name, version); // Constructs a Overlay object for the template tab
+const overlayEarnings = new Overlay(name, version); // Constructs a new Overlay object for earnings results
 const templateManager = new TemplateManager(name, version, overlayMain); // Constructs a new TemplateManager object
 const apiManager = new ApiManager(templateManager); // Constructs a new ApiManager object
 
@@ -186,6 +189,9 @@ overlayMain.setApiManager(apiManager); // Sets the API manager
 
 const storageTemplates = JSON.parse(GM_getValue('bmTemplates', '{}'));
 templateManager.importJSON(storageTemplates); // Loads the templates
+
+const breakPoint = JSON.parse(GM_getValue(rmBreakPointName, '{}'))
+logger.info(rmBreakPointName, breakPoint)
 
 const userSettings = JSON.parse(GM_getValue('bmUserSettings', '{}')); // Loads the user settings
 logger.log('main', 'userSettings', userSettings);
@@ -197,6 +203,7 @@ if (Object.keys(userSettings).length === 0) {
 }
 
 buildOverlayMain(); // Builds the main overlay
+buildOverlayEarnings(); // Builds the earnings results overlay
 
 overlayMain.handleDrag('#bm-overlay', '#bm-bar-drag'); // Creates dragging capability on the drag bar for dragging the overlay
 
@@ -243,6 +250,27 @@ function observeBlack() {
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function buildOverlayEarnings() {
+  overlayEarnings
+    .addDiv({'id': 'bm-overlay-earnings', 'style': 'top: 10%; left: 50%; margin-left: -300px; width: 600px; max-width: 90vw; max-height: 80vh; display: none; overflow-y: auto; position: fixed;'})
+      .addDiv({'id': 'bm-contain-header-earnings'})
+        .addDiv({'style': 'display: flex; justify-content: space-between; align-items: center;'})
+          .addHeader(2, {'textContent': 'Результаты пересчёта', 'style': 'margin: 0;'}).buildElement()
+          .addButton({'id': 'bm-button-close-earnings', 'textContent': '✕', 'style': 'background-color: #bc2d2f; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; padding: 0;'}, (instance, button) => {
+            button.addEventListener('click', () => {
+              const overlay = document.querySelector('#bm-overlay-earnings');
+              if (overlay) {
+                overlay.style.display = 'none';
+              }
+            });
+          }).buildElement()
+        .buildElement()
+      .buildElement()
+      .addHr().buildElement()
+      .addDiv({'id': 'bm-contain-earnings-table'}).buildElement()
+    .buildOverlay(document.body);
 }
 
 /** Deploys the overlay to the page with minimize/maximize functionality.
@@ -667,6 +695,26 @@ function buildOverlayMain() {
               window.open('https://bluemarble.lol/', '_blank', 'noopener noreferrer');
             });
           }).buildElement()
+          .addButton({'className': 'bm-help', 'innerHTML': '➕', 'title': 'Создать точку сохранения'},
+            (instance, button) => {
+            button.addEventListener('click', () => {
+              const tableData = extractTableData();
+              iLogger.log(tableData)
+              GM.setValue(rmBreakPointName, JSON.stringify({[new Date().toLocaleString('ru-RU')]: tableData}));
+            });
+          }).buildElement()
+          .addButton({'className': 'bm-help', 'innerHTML': '🖩', 'title': 'Пересчитать'},
+            (instance, button) => {
+            button.addEventListener('click', () => {
+              const tableData = extractTableData();
+              const oldData = Object.values(breakPoint)[0];
+              if (!oldData || oldData.length === 0) {
+                instance.handleDisplayError('Нет данных точки сохранения! Создайте точку сохранения сначала.');
+                return;
+              }
+              printEarningsTable(calculateEarnings(oldData, tableData));
+            });
+          }).buildElement()
         .buildElement()
         .addSmall({'textContent': 'Made by SwingTheVine', 'style': 'margin-top: auto;'}).buildElement()
       .buildElement()
@@ -803,4 +851,112 @@ function buildOverlayTabTemplate() {
       .buildElement()
     .buildElement()
   .buildOverlay();
+}
+
+function extractTableData() {
+  const rows = document.querySelectorAll('table.table tbody tr');
+
+  return Array.from(rows).map(row => {
+    // Получаем название из элемента с классом font-semibold
+    const nameElement = row.querySelector('.font-semibold');
+    const name = nameElement
+      ? nameElement.textContent.replace(/\n/g, ' ').trim()
+      : 'Нет названия';
+
+    // Получаем числовое значение из третьей ячейки (td[2])
+    const cells = row.querySelectorAll('td');
+    const numericValue = cells.length > 2
+      ? parseNumericValue(cells[2].textContent)
+      : 0;
+
+    return [name, numericValue];
+  });
+}
+
+function parseNumericValue(text) {
+  if (!text) return 0;
+
+  // Удаляем всё, кроме цифр и минуса для отрицательных чисел
+  const numericString = text.replace(/[^\d-]/g, '');
+  const value = parseInt(numericString, 10);
+
+  // Проверяем, что получили валидное число
+  return isNaN(value) ? 0 : value;
+}
+
+function calculateEarnings(oldData, newData) {
+  // Преобразуем массивы в объекты для удобства поиска
+  const oldMap = new Map(oldData);
+  const newMap = new Map(newData);
+  const result = [];
+
+  // Собираем всех уникальных пользователей
+  const allUsers = new Set([
+    ...oldData.map(item => item[0]),
+    ...newData.map(item => item[0])
+  ]);
+
+  // Для каждого пользователя считаем разницу
+  for (const user of allUsers) {
+    const oldValue = oldMap.get(user) || 0;
+    const newValue = newMap.get(user) || 0;
+    const earned = newValue - oldValue;
+
+    result.push([user, earned]);
+  }
+
+  // Сортируем по убыванию заработка (опционально)
+  return result.sort((a, b) => b[1] - a[1]);
+}
+
+function printEarningsTable(earnings) {
+  // Выводим в консоль для отладки
+  console.table(
+    earnings.map(([user, earned]) => ({
+      'Пользователь': user,
+      'Заработано': earned,
+      'Статус': earned > 0 ? '↑ Прирост' : earned < 0 ? '↓ Убыток' : '— Без изменений'
+    }))
+  );
+
+  // Отображаем в overlay
+  const tableContainer = document.querySelector('#bm-contain-earnings-table');
+  const overlay = document.querySelector('#bm-overlay-earnings');
+  
+  if (!tableContainer || !overlay) {
+    console.error('Earnings overlay elements not found');
+    return;
+  }
+
+  // Создаём таблицу
+  let tableHTML = '<table style="width: 100%; border-collapse: collapse; margin-top: 10px;">';
+  tableHTML += '<thead><tr style="background-color: rgba(0,0,0,0.2);">';
+  tableHTML += '<th style="padding: 8px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.2);">Пользователь</th>';
+  tableHTML += '<th style="padding: 8px; text-align: right; border-bottom: 1px solid rgba(255,255,255,0.2);">Заработано</th>';
+  tableHTML += '<th style="padding: 8px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.2);">Статус</th>';
+  tableHTML += '</tr></thead><tbody>';
+
+  earnings.forEach(([user, earned]) => {
+    const status = earned > 0 ? '↑ Прирост' : earned < 0 ? '↓ Убыток' : '— Без изменений';
+    const statusColor = earned > 0 ? '#4fb845' : earned < 0 ? '#bc2d2f' : '#888';
+    const earnedColor = earned > 0 ? '#4fb845' : earned < 0 ? '#bc2d2f' : '#fff';
+    
+    tableHTML += '<tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">';
+    tableHTML += `<td style="padding: 8px;">${user}</td>`;
+    tableHTML += `<td style="padding: 8px; text-align: right; color: ${earnedColor}; font-weight: bold;">${earned > 0 ? '+' : ''}${earned.toLocaleString()}</td>`;
+    tableHTML += `<td style="padding: 8px; text-align: center; color: ${statusColor};">${status}</td>`;
+    tableHTML += '</tr>';
+  });
+
+  tableHTML += '</tbody></table>';
+
+  tableContainer.innerHTML = tableHTML;
+  
+  // Показываем overlay и центрируем его при первом показе
+  if (overlay.style.display === 'none' || !overlay.style.display) {
+    overlay.style.left = '50%';
+    overlay.style.marginLeft = '-300px';
+    overlay.style.top = '10%';
+  }
+  overlay.style.display = 'block';
 }

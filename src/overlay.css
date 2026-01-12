@@ -1,7 +1,7 @@
 /* @since 0.5.1 */
 
 /* The entire overlay */
-#bm-overlay, #bm-overlay-telemetry {
+#bm-overlay, #bm-overlay-telemetry, #bm-overlay-earnings {
   position: fixed;
   background-color: rgb(125, 56, 57);
   color: white;
@@ -16,6 +16,41 @@
   -webkit-backface-visibility: hidden;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
+}
+
+/* Earnings overlay specific styles */
+#bm-overlay-earnings {
+  max-width: 600px;
+  width: 600px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Center earnings overlay on first show */
+#bm-overlay-earnings:not([style*="transform"]) {
+  left: 50% !important;
+  margin-left: -300px;
+}
+
+#bm-overlay-earnings table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#bm-overlay-earnings th,
+#bm-overlay-earnings td {
+  padding: 8px;
+}
+
+#bm-overlay-earnings tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+#bm-button-close-earnings:hover {
+  background-color: #1061e5 !important;
+}
+
+#bm-button-close-earnings:active {
+  background-color: #2e97ff !important;
 }
 
 /* Smooth transitions for minimize/maximize functionality */
