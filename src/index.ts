@@ -8,10 +8,8 @@ const logger = new Logger([appName]);
 
 logger.info('Application started');
 
-render(Overlay(), document.body);
+// Imports the CSS file from dist folder on github
+const cssOverlay = GM_getResourceText("CSS-BM-File");
+GM_addStyle(cssOverlay);
 
-// if (process.env.BUILD_MODE === 'dev') {
-//     // inline уже вставлен плагином, можно ничего не делать
-// } else {
-//     // подключаем через @resource GM_getResourceURL
-// }
+render(Overlay(), document.body);
