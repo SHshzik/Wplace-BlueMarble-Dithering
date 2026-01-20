@@ -14,7 +14,7 @@
 // @grant        GM_addStyle
 // @grant        GM.setValue
 // @grant        GM_getValue
-// @resource     CSS-BM-File https://raw.githubusercontent.com/SHshzik/Wplace-BlueMarble-Dithering/refs/heads/main/dist/RedMarble.user.css
+// @resource     CSS-BM-File https://raw.githubusercontent.com/SHshzik/Wplace-BlueMarble-Dithering/refs/heads/feature/global/dist/styles.css
 // ==/UserScript==
 
 // Wplace  --> https://wplace.live
