@@ -1,6 +1,5 @@
 import { render } from 'preact';
 import { Overlay } from './ui/overlay';
-// import './index.css';
 
 render(
   <Overlay />,
