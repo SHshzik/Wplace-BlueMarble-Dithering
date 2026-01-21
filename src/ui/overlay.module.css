@@ -1,0 +1,16 @@
+.bm-overlay {
+    position: fixed;
+    background-color: rgb(125, 56, 57);
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+    z-index: 9000;
+    max-width: 300px;
+    width: auto;
+    /* Performance optimizations for smooth dragging */
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+}

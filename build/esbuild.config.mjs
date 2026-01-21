@@ -1,8 +1,8 @@
 import esbuild from 'esbuild';
 import fs from 'fs';
-import path from 'path';
-import postcss from 'postcss';
-import postcssConfig from './postcss.config.cjs';
+// import path from 'path';
+// import postcss from 'postcss';
+// import postcssConfig from './postcss.config.cjs';
 
 const cssOutFile = 'dist/styles.css';
 let collectedCss = '';
@@ -47,32 +47,32 @@ const META_JS = 'meta/RedMarble.meta.js';
 //     });
 //   }
 // };
-
-const cssModulesPlugin = {
-  name: 'css-modules',
-  setup(build) {
-    build.onLoad({ filter: /\.module\.css$/ }, async (args) => {
-      const css = await fs.promises.readFile(args.path, 'utf8');
-
-      let json = {};
-
-      const result = await postcss(postcssConfig.plugins).process(css, {
-        from: args.path
-      });
-
-      result.messages.forEach(msg => {
-        if (msg.type === 'export') json = msg.exportTokens;
-      });
-
-      // Prod: отдельный файл
-      collectedCss += result.css + '\n';
-      return {
-        contents: `export default ${JSON.stringify(json)};`,
-        loader: 'js'
-      };
-    });
-  }
-};
+//
+// const cssModulesPlugin = {
+//   name: 'css-modules',
+//   setup(build) {
+//     build.onLoad({ filter: /\.module\.css$/ }, async (args) => {
+//       const css = await fs.promises.readFile(args.path, 'utf8');
+//
+//       let json = {};
+//
+//       const result = await postcss(postcssConfig.plugins).process(css, {
+//         from: args.path
+//       });
+//
+//       result.messages.forEach(msg => {
+//         if (msg.type === 'export') json = msg.exportTokens;
+//       });
+//
+//       // Prod: отдельный файл
+//       collectedCss += result.css + '\n';
+//       return {
+//         contents: `export default ${JSON.stringify(json)};`,
+//         loader: 'js'
+//       };
+//     });
+//   }
+// };
 
 await esbuild.build({
   entryPoints: ['src/index.ts'],
@@ -80,7 +80,7 @@ await esbuild.build({
   bundle: true,
   format: 'iife',
   target: ['es2020'],
-  plugins: [cssModulesPlugin],
+  // plugins: [cssModulesPlugin],
   minify: true
 });
 
