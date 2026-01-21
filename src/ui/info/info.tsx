@@ -1,5 +1,8 @@
 import { Component } from 'preact';
-import { bmContainUserInfo } from './info.module.css';
+
+import parseEndpoint from '../../utils/endpoint';
+
+import styles from './info.module.css';
 
 interface InfoState {
   username: string;
@@ -17,12 +20,7 @@ export default class Info extends Component {
   componentDidMount() {
     // this.updateFullChargeInfo(overlay, dataJSON)
     window.addEventListener('message', async (event) => {
-      const endpointText = event.data.endpoint
-        .split('?')[0]
-        .split('/')
-        .filter((s: string) => s && isNaN(Number(s)))
-        .filter((s: string) => s && !s.includes('.'))
-        .pop();
+      const endpointText = parseEndpoint(event.data.endpoint);
 
       if (endpointText === 'me') {
         const { data: { data: { name, droplets, level, pixelsPainted } } } = event
@@ -35,7 +33,7 @@ export default class Info extends Component {
 
   render() {
     return (
-      <div class={ bmContainUserInfo }>
+      <div class={ styles.bmContainUserInfo }>
         <p>Username: <b>{ this.state.username }</b></p>
         <p>Droplets: <b>{ new Intl.NumberFormat().format(this.state.droplets) }</b></p>
         <p>Next level in... <b>{ new Intl.NumberFormat().format(this.state.nextLevelPixels) }</b> pixel{this.state.nextLevelPixels == 1 ? '' : 's'}</p>
