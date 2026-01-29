@@ -1,9 +1,9 @@
 import { Component } from 'preact';
 
-import parseEndpoint from '../../utils/endpoint';
+import messageHandle from '../../utils/message_handle';
+import Logger from '../../services/logger';
 
 import styles from './info.module.css';
-import Logger from '../../services/logger.ts';
 
 interface InfoState {
   username: string;
@@ -28,31 +28,26 @@ export default class Info extends Component {
   logger = new Logger(['Info']);
   timer: number = 0;
   cooldown: number = 30_000;
+  endpoint = 'me'
 
   constructor() {
     super();
   }
 
   componentDidMount() {
-    window.addEventListener('message', async (event) => {
-      const endpointText = parseEndpoint(event.data.endpoint);
+    messageHandle(this.endpoint, (event) => {
+      const {data: {data: {name, droplets, level, pixelsPainted, charges: {count, max}}}} = event
+      const nextLevelPixels: number = Math.ceil(Math.pow(Math.floor(level) * Math.pow(30, 0.65), (1 / 0.65)) - pixelsPainted);
 
-      if (endpointText === 'me') {
-        this.logger.info(event);
-
-        const {data: {data: {name, droplets, level, pixelsPainted, charges: {count, max}}}} = event
-        const nextLevelPixels: number = Math.ceil(Math.pow(Math.floor(level) * Math.pow(30, 0.65), (1 / 0.65)) - pixelsPainted);
-
-        this.setState({
-          username: name,
-          droplets: droplets,
-          nextLevelPixels: nextLevelPixels,
-          startTime: Date.now(),
-          currentCharges: count,
-          maxCharges: max,
-        });
-      }
-    });
+      this.setState({
+        username: name,
+        droplets: droplets,
+        nextLevelPixels: nextLevelPixels,
+        startTime: Date.now(),
+        currentCharges: count,
+        maxCharges: max,
+      });
+    })
 
     this.timer = setInterval(() => {
       this.setState({time: Date.now()})
@@ -84,21 +79,21 @@ export default class Info extends Component {
 
     let timeText = '';
     if (hours > 0) {
-      timeText = `${hours}ч ${minutes}м ${seconds}с`;
+      timeText = `${ hours }ч ${ minutes }м ${ seconds }с`;
     } else if (minutes > 0) {
-      timeText = `${minutes}м ${seconds}с`;
+      timeText = `${ minutes }м ${ seconds }с`;
     } else {
-      timeText = `${seconds}с`;
+      timeText = `${ seconds }с`;
     }
 
     const chargesGained = Math.floor(elapsed / this.cooldown);
     const currentCharges = Math.min(this.state.currentCharges + chargesGained, this.state.maxCharges);
-    const chargesText = `${Math.floor(currentCharges)}/${this.state.maxCharges}`;
+    const chargesText = `${ Math.floor(currentCharges) }/${ this.state.maxCharges }`;
 
     return (
       <p>
-        Full Charge in{" "}
-        <b style="color: #f59e0b;">{ timeText }</b>{" "}
+        Full Charge in{ " " }
+        <b style="color: #f59e0b;">{ timeText }</b>{ " " }
         <span style="color: #6b7280; font-size: 0.9em;">({ chargesText })</span>
       </p>
     )

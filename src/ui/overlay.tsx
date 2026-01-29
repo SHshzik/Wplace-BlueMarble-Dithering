@@ -1,13 +1,16 @@
 import { bmOverlay } from './overlay.module.css'
 import Header from './header/header';
 import Info from "./info/info.tsx";
+import Coordinates from "./coordinates/coordinates.tsx";
 
 export function Overlay() {
   return (
     <div className={ bmOverlay } style={ {top: 10, right: 50} }>
       <Header />
-      <hr/>
+      <hr />
       <Info />
+      <hr />
+      <Coordinates />
     </div>
   );
 }
