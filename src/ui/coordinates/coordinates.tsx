@@ -2,6 +2,7 @@ import { Component } from "preact";
 import styles from './coordinates.module.css';
 import messageHandle from "../../utils/message_handle.ts";
 import Logger from "../../services/logger.ts";
+import { GM_getValue, GM_setValue } from "$";
 
 // TODO: mv state to props for setting coors from places;
 interface State {
@@ -16,6 +17,7 @@ export default class Coordinates extends Component {
   max = 2047
   step = 1
   endpoint = 'pixel'
+  key = 'coords'
   logger = new Logger(['Coordinates'])
   state: State = {
     tileX: 0,
@@ -38,12 +40,32 @@ export default class Coordinates extends Component {
         pixelY: payloadExtractor.get('y')
       })
     })
+
+    const { tx = 0, ty = 0, px = 0, py = 0 } = JSON.parse(GM_getValue(this.key, '{}'))
+
+    this.setState({
+      tileX: tx,
+      tileY: ty,
+      pixelX: px,
+      pixelY: py
+    })
+  }
+
+  saveCoords() {
+    const tx = this.state.tileX;
+    const ty = this.state.tileY;
+    const px = this.state.pixelX;
+    const py = this.state.pixelY;
+
+    GM_setValue(this.key, JSON.stringify({ tx, ty, px, py }));
+
+    this.logger.info('saveCoords', { tx, ty, px, py });
   }
 
   render() {
     return (
       <div>
-        <button class={ styles.coordinatesBtn }>
+        <button class={ styles.coordinatesBtn } onClick={() => { this.saveCoords() }}>
           <svg class={ styles.coordinatesSvg } xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 6">
             <circle cx="2" cy="2" r="2"></circle>
             <path d="M2 6 L3.7 3 L0.3 3 Z"></path>
