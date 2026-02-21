@@ -1,25 +1,63 @@
 const fetchInterceptor = function () {
+  const pendingResolvers = new Map<string, (normalizedData: Blob) => void>();
+  window.addEventListener('message', (event: MessageEvent) => {
+    const { type, blobID, normalizedData } = event.data ?? {};
+
+    if (type !== 'image-ready') return;
+
+    const resolve = pendingResolvers.get(blobID);
+    if (resolve) {
+      resolve(normalizedData);
+      pendingResolvers.delete(blobID);
+    }
+  });
+
   const originalFetch = window.fetch;
 
   window.fetch = async (...args) => {
     const response = await originalFetch(...args);
     const endpointName = ((args[0] instanceof Request) ? args[0]?.url : args[0]) || 'ignore';
+    const clone = response.clone();
 
-    try {
-      const clone = response.clone();
-      const data = await clone.json();
+    const contentType = clone.headers.get('content-type') || '';
 
-      window.postMessage(
-        {
-          source: 'tm-fetch-hook',
-          url: args[0],
-          endpoint: endpointName,
-          data,
-        },
-        '*'
-      );
-    } catch (e) {
-      // не JSON — игнорируем
+    if (contentType.includes('application/json')) {
+      try {
+        const data = await clone.json();
+        window.postMessage({ endpoint: endpointName, data }, '*');
+      } catch (e) {
+        // ignore
+      }
+    } else if (contentType.includes('image/')) {
+      try {
+        const data = await clone.blob();
+
+        return new Promise<Response>((resolve) => {
+          const blobID = crypto.randomUUID();
+
+          pendingResolvers.set(blobID, (normalizedData: Blob) => {
+            resolve(
+              new Response(normalizedData, {
+                headers: clone.headers,
+                status: clone.status,
+                statusText: clone.statusText,
+              })
+            );
+          });
+
+          window.postMessage(
+            {
+              type: 'image-request',
+              blobID,
+              blob: data,
+              endpoint: endpointName,
+            },
+            '*'
+          );
+        });
+      } catch (e) {
+        // ignore
+      }
     }
 
     return response;

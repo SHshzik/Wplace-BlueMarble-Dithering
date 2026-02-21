@@ -1,6 +1,8 @@
 const defaultEndpoint: string = 'ignore';
 
-export default (url: string): string => {
+export default (url?: string): string => {
+  if (!url) return defaultEndpoint;
+
   return url
     .split('?')[0]
     .split('/')

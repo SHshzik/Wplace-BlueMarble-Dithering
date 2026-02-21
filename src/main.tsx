@@ -1,7 +1,8 @@
 import { render } from 'preact';
-import { Overlay } from './ui/overlay';
+import Overlay from './ui/overlay';
 
 import './services/spy';
+import './services/render';
 
 render(
   <Overlay />,
