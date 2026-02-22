@@ -1,4 +1,9 @@
-.coordinates__input {
+.coords {
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+.coords__input {
     appearance: auto;
     -moz-appearance: textfield;
     width: 5.5ch;
@@ -8,13 +13,13 @@
     font-size: small;
 }
 
-.coordinates__input::-webkit-outer-spin-button,
-.coordinates__input::-webkit-inner-spin-button {
+.coords__input::-webkit-outer-spin-button,
+.coords__input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
 }
 
-.coordinates__btn {
+.coords__btn {
     vertical-align: middle;
     border: white 1px solid;
     height: 1.5em;
@@ -28,7 +33,7 @@
     /*padding: 0 0.75ch;*/
 }
 
-.coordinates__svg {
+.coords__svg {
     width: 50%;
     margin: 0 auto;
     fill: #111;

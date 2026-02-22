@@ -13,4 +13,6 @@
     -webkit-backface-visibility: hidden;
     transform-style: preserve-3d;
     -webkit-transform-style: preserve-3d;
+    font-family: 'Roboto Mono', 'Courier New', 'Monaco', 'DejaVu Sans Mono', monospace, 'Arial';
+    letter-spacing: 0.05em;
 }

@@ -2,7 +2,6 @@ import { Component } from 'preact';
 
 import messageHandle from '../../utils/message_handle';
 import Logger from '../../services/logger';
-
 import styles from './info.module.css';
 
 interface InfoState {
@@ -28,7 +27,7 @@ export default class Info extends Component {
   logger = new Logger(['Info']);
   timer: number = 0;
   cooldown: number = 30_000;
-  endpoint = 'me'
+  endpoint = 'me';
 
   constructor() {
     super();
@@ -36,8 +35,21 @@ export default class Info extends Component {
 
   componentDidMount() {
     messageHandle(this.endpoint, (event) => {
-      const {data: {data: {name, droplets, level, pixelsPainted, charges: {count, max}}}} = event
-      const nextLevelPixels: number = Math.ceil(Math.pow(Math.floor(level) * Math.pow(30, 0.65), (1 / 0.65)) - pixelsPainted);
+      const {
+        data: {
+          data: {
+            name,
+            droplets,
+            level,
+            pixelsPainted,
+            charges: { count, max },
+          },
+        },
+      } = event;
+      const nextLevelPixels: number = Math.ceil(
+        Math.pow(Math.floor(level) * Math.pow(30, 0.65), 1 / 0.65) -
+          pixelsPainted,
+      );
 
       this.setState({
         username: name,
@@ -47,29 +59,36 @@ export default class Info extends Component {
         currentCharges: count,
         maxCharges: max,
       });
-    })
+    });
 
     this.timer = setInterval(() => {
-      this.setState({time: Date.now()})
-    }, 1000)
+      this.setState({ time: Date.now() });
+    }, 1000);
   }
 
   render() {
     return (
-      <div class={ styles.bmContainUserInfo }>
-        <p>Username: <b>{ this.state.username }</b></p>
-        <p>Droplets: <b>{ new Intl.NumberFormat().format(this.state.droplets) }</b></p>
-        <p>Next level
-          in... <b>{ new Intl.NumberFormat().format(this.state.nextLevelPixels) }</b> pixel{ this.state.nextLevelPixels == 1 ? '' : 's' }
+      <div class={styles.bmContainUserInfo}>
+        <p>
+          Username: <b>{this.state.username}</b>
         </p>
-        <div>{ this.fullCharges }</div>
+        <p>
+          Droplets: <b>{new Intl.NumberFormat().format(this.state.droplets)}</b>
+        </p>
+        <p>
+          Next level in{' '}
+          <b>{new Intl.NumberFormat().format(this.state.nextLevelPixels)}</b>{' '}
+          pixel{this.state.nextLevelPixels == 1 ? '' : 's'}
+        </p>
+        <div>{this.fullCharges}</div>
       </div>
     );
   }
 
   get fullCharges() {
     const elapsed = Date.now() - this.state.startTime;
-    const timeToFullMs = (this.state.maxCharges - this.state.currentCharges) * this.cooldown;
+    const timeToFullMs =
+      (this.state.maxCharges - this.state.currentCharges) * this.cooldown;
     const remainingMs = Math.max(0, timeToFullMs - elapsed);
 
     const totalSeconds = Math.ceil(remainingMs / 1000);
@@ -79,23 +98,25 @@ export default class Info extends Component {
 
     let timeText = '';
     if (hours > 0) {
-      timeText = `${ hours }ч ${ minutes }м ${ seconds }с`;
+      timeText = `${hours}ч ${minutes}м ${seconds}с`;
     } else if (minutes > 0) {
-      timeText = `${ minutes }м ${ seconds }с`;
+      timeText = `${minutes}м ${seconds}с`;
     } else {
-      timeText = `${ seconds }с`;
+      timeText = `${seconds}с`;
     }
 
     const chargesGained = Math.floor(elapsed / this.cooldown);
-    const currentCharges = Math.min(this.state.currentCharges + chargesGained, this.state.maxCharges);
-    const chargesText = `${ Math.floor(currentCharges) }/${ this.state.maxCharges }`;
+    const currentCharges = Math.min(
+      this.state.currentCharges + chargesGained,
+      this.state.maxCharges,
+    );
+    const chargesText = `${Math.floor(currentCharges)}/${this.state.maxCharges}`;
 
     return (
       <p>
-        Full Charge in{ " " }
-        <b style="color: #f59e0b;">{ timeText }</b>{ " " }
-        <span style="color: #6b7280; font-size: 0.9em;">({ chargesText })</span>
+        Full Charge in <b style='color: #f59e0b;'>{timeText}</b> <br />
+        <span style='color: #6b7280; font-size: 0.9em;'>({chargesText})</span>
       </p>
-    )
+    );
   }
 }

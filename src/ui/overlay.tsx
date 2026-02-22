@@ -19,6 +19,7 @@ export default class Overlay extends Component{
         <Colors />
         <hr />
         <Uploader />
+        <hr />
       </div>
     );
   }

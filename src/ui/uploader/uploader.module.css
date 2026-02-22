@@ -1,9 +1,10 @@
-/* Ряд: файловый input и кнопка Create в одну линию */
 .row {
   display: flex;
   align-items: center;
   gap: 0.5ch;
   flex-wrap: wrap;
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 
 .fileInputHidden {

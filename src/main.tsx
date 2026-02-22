@@ -5,10 +5,11 @@ import { TemplateManager, TemplateManagerContext } from './services/template_man
 import CurrentCoordsManager from './services/coords_manager';
 
 import './services/spy';
-import './services/render';
+import { initImagePipeline } from './services/render';
 
 const currentCoordsManager = new CurrentCoordsManager();
 const templateManager = new TemplateManager(currentCoordsManager);
+initImagePipeline(templateManager);
 
 function App() {
   return (

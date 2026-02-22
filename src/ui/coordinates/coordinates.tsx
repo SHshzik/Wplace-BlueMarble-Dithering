@@ -34,18 +34,18 @@ export default class Coordinates extends Component {
 
   render() {
     return (
-      <div>
-        <button class={ styles.coordinatesBtn } onClick={() => { this.saveCoords() }}>
-          <svg class={ styles.coordinatesSvg } xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 6">
+      <div class={ styles.coords }>
+        <button class={ styles.coordsBtn } onClick={() => { this.saveCoords() }}>
+          <svg class={ styles.coordsSvg } xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 6">
             <circle cx="2" cy="2" r="2"></circle>
             <path d="M2 6 L3.7 3 L0.3 3 Z"></path>
             <circle cx="2" cy="2" r="0.7" fill="white"></circle>
           </svg>
         </button>
-        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.tileX}/>
-        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.tileY}/>
-        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.pixelX}/>
-        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.pixelY}/>
+        <input class={ styles.coordsInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.tileX}/>
+        <input class={ styles.coordsInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.tileY}/>
+        <input class={ styles.coordsInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.pixelX}/>
+        <input class={ styles.coordsInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.pixelY}/>
       </div>
     );
   }
