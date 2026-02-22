@@ -1,65 +1,35 @@
-import { Component } from "preact";
+import { Component } from 'preact';
+
 import styles from './coordinates.module.css';
 import messageHandle from "../../utils/message_handle.ts";
 import Logger from "../../services/logger.ts";
-import { GM_getValue, GM_setValue } from "$";
-
-// TODO: mv state to props for setting coors from places;
-interface State {
-  tileX: number
-  tileY: number
-  pixelX: number
-  pixelY: number
-}
+import Coords from '../../models/coords.ts';
+import { TemplateManagerContext } from '../../services/template_manger';
 
 export default class Coordinates extends Component {
+  static contextType = TemplateManagerContext;
+
+  private logger = new Logger(['Coordinates'])
+
   min = 0
   max = 2047
   step = 1
   endpoint = 'pixel'
-  key = 'coords'
-  logger = new Logger(['Coordinates'])
-  state: State = {
-    tileX: 0,
-    tileY: 0,
-    pixelX: 0,
-    pixelY: 0
-  }
 
-  componentDidMount() {
+  componentDidMount(): void {
     messageHandle(this.endpoint, (event) => {
       const { data: { endpoint } } = event
 
       const coordsTile = endpoint.split('?')[0].split('/').filter((s: string) => s && !isNaN(Number(s)));
       const payloadExtractor = new URLSearchParams(endpoint.split('?')[1]);
 
-      this.setState({
-        tileX: coordsTile[0],
-        tileY: coordsTile[1],
-        pixelX: payloadExtractor.get('x'),
-        pixelY: payloadExtractor.get('y')
-      })
-    })
-
-    const { tx = 0, ty = 0, px = 0, py = 0 } = JSON.parse(GM_getValue(this.key, '{}'))
-
-    this.setState({
-      tileX: tx,
-      tileY: ty,
-      pixelX: px,
-      pixelY: py
+      const newCoords = new Coords(Number(coordsTile[0]), Number(coordsTile[1]), Number(payloadExtractor.get('x')), Number(payloadExtractor.get('y')))
+      this.context.setCoords(newCoords);
     })
   }
 
-  saveCoords() {
-    const tx = this.state.tileX;
-    const ty = this.state.tileY;
-    const px = this.state.pixelX;
-    const py = this.state.pixelY;
-
-    GM_setValue(this.key, JSON.stringify({ tx, ty, px, py }));
-
-    this.logger.info('saveCoords', { tx, ty, px, py });
+  saveCoords(): void {
+    // backward compatibility
   }
 
   render() {
@@ -72,10 +42,10 @@ export default class Coordinates extends Component {
             <circle cx="2" cy="2" r="0.7" fill="white"></circle>
           </svg>
         </button>
-        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.state.tileX}/>
-        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.state.tileY}/>
-        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.state.pixelX}/>
-        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.state.pixelY}/>
+        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.tileX}/>
+        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.tileY}/>
+        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.pixelX}/>
+        <input class={ styles.coordinatesInput } type="number" min={ this.min } max={ this.max } step={ this.step } required value={this.context.coords.value.pixelY}/>
       </div>
     );
   }

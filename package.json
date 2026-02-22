@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@preact/signals": "^2.8.1",
     "preact": "^10.27.1"
   },
   "devDependencies": {

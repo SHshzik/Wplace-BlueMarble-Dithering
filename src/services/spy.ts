@@ -16,7 +16,7 @@ const fetchInterceptor = function () {
 
   window.fetch = async (...args) => {
     const response = await originalFetch(...args);
-    const endpointName = ((args[0] instanceof Request) ? args[0]?.url : args[0]) || 'ignore';
+    const endpointName = ((args[0] instanceof Request) ? args[0]?.url : args[0]) as string || 'ignore';
     const clone = response.clone();
 
     const contentType = clone.headers.get('content-type') || '';
@@ -28,7 +28,7 @@ const fetchInterceptor = function () {
       } catch (e) {
         // ignore
       }
-    } else if (contentType.includes('image/')) {
+    } else if (contentType.includes('image/') && !endpointName.includes('openfreemap') && !endpointName.includes('maps')) {
       try {
         const data = await clone.blob();
 
