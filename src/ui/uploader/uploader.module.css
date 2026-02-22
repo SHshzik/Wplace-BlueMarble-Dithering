@@ -1,0 +1,35 @@
+/* Ряд: файловый input и кнопка Create в одну линию */
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.5ch;
+  flex-wrap: wrap;
+}
+
+.fileInputHidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.button {
+  background-color: #bc2d2f;
+  border: none;
+  border-radius: 1em;
+  padding: 0 0.75ch;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+}
+
+.button:hover,
+.button:focus-visible {
+  background-color: #1061e5;
+}
+
+.button:active {
+  background-color: #2e97ff;
+}

@@ -4,6 +4,7 @@ import Info from "./info/info.tsx";
 import Colors from './colors/colors.tsx';
 import Coordinates from "./coordinates/coordinates.tsx";
 import { Component } from "preact";
+import Uploader from './uploader/uploader.tsx';
 
 export default class Overlay extends Component{
   render() {
@@ -16,6 +17,8 @@ export default class Overlay extends Component{
         <Coordinates />
         <hr />
         <Colors />
+        <hr />
+        <Uploader />
       </div>
     );
   }
