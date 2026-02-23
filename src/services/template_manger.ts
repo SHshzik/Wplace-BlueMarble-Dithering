@@ -1,44 +1,36 @@
 import { createContext } from 'preact';
 import { Signal } from '@preact/signals';
+import { GM_getValue, GM_setValue } from '$';
 
 import Logger from './logger';
 import Coords from '../models/coords';
 import CurrentCoordsManager from './coords_manager';
+import Template, { StoredTemplate } from '../models/template';
 import TemplateTile from '../models/template_tile';
-import { base64ToUint8, uint8ToBase64 } from '../utils/base64';
-import { GM_getValue, GM_setValue } from '$';
+import ColorSet from '../models/color_set';
+import { uint8ToBase64 } from '../utils/base64';
+
+import colorPalette from '../data/color_palette.json';
+
+type PaletteEntry = { id: number; rgb: number[] };
+const palette = colorPalette as PaletteEntry[];
 
 export class TemplateManager {
-  private logger = new Logger(['TemplateManager']);
-  private tileSize = 1000;
+  private readonly imageScaleFactor = 3;
+  private readonly logger = new Logger(['TemplateManager']);
+  private readonly tileSize = 1000;
   private currentCoordsManager: CurrentCoordsManager;
-  private templateTiles: TemplateTile[] = [];
+  private templates: Template[] = [];
 
   constructor(currentCoordsManager: CurrentCoordsManager) {
     this.currentCoordsManager = currentCoordsManager;
+
     const stored = GM_getValue('templates', '[]');
     try {
-      const parsed = JSON.parse(stored) as Array<{
-        tileX: number;
-        tileY: number;
-        pixelX: number;
-        pixelY: number;
-        buffer: string;
-      }>;
-      this.templateTiles = parsed.map((item) => {
-        const bytes = base64ToUint8(item.buffer);
-        const blob = new Blob([bytes], { type: 'image/png' });
-        return new TemplateTile(
-          item.tileX,
-          item.tileY,
-          item.pixelX,
-          item.pixelY,
-          blob,
-          item.buffer,
-        );
-      });
+      const parsed = JSON.parse(stored) as StoredTemplate[];
+      this.templates = parsed.map(Template.fromStored);
     } catch {
-      this.templateTiles = [];
+      this.templates = [];
     }
   }
 
@@ -49,7 +41,6 @@ export class TemplateManager {
     };
   }
 
-  private readonly imageScaleFactor = 3;
   async createTemplate(file: File): Promise<void> {
     const coords = this.currentCoordsManager.getCurrentCoordsSignal().value;
     const bitmap = await createImageBitmap(file);
@@ -63,7 +54,9 @@ export class TemplateManager {
       coords.pixelY,
     ];
 
+    const colorCounts = new Map<number, number>();
     const results: TemplateTile[] = [];
+
     const canvas = new OffscreenCanvas(this.tileSize, this.tileSize);
     const context = canvas.getContext('2d', { willReadFrequently: true });
     if (!context) throw new Error('Could not get canvas 2d context');
@@ -106,9 +99,12 @@ export class TemplateManager {
         const data = imageData.data;
         for (let y = 0; y < canvasHeight; y++) {
           for (let x = 0; x < canvasWidth; x++) {
-            const isCenterPixel = (x % scale === 1) && (y % scale === 1);
-            if (!isCenterPixel) {
-              const i = (y * canvasWidth + x) * 4;
+            const isCenterPixel = x % scale === 1 && y % scale === 1;
+            const i = (y * canvasWidth + x) * 4;
+            if (isCenterPixel) {
+              const colorId = findColorId(data[i], data[i + 1], data[i + 2]);
+              colorCounts.set(colorId, (colorCounts.get(colorId) ?? 0) + 1);
+            } else {
               data[i + 3] = 0;
             }
           }
@@ -144,7 +140,12 @@ export class TemplateManager {
 
     bitmap.close();
 
-    this.templateTiles = results;
+    const colorSet: ColorSet[] = Array.from(colorCounts.entries()).map(
+      ([colorId, pixelCount]) => new ColorSet(colorId, pixelCount),
+    );
+    const tileCoords = Template.uniqueTileCoordsFromTiles(results);
+
+    this.templates = [new Template(results, colorSet, tileCoords)];
   }
 
   getTileSize(): number {
@@ -156,19 +157,18 @@ export class TemplateManager {
   }
 
   getTilesForTile(tileX: number, tileY: number): TemplateTile[] {
-    return this.templateTiles.filter(
-      (t) => t.tileX === tileX && t.tileY === tileY
-    );
+    const result: TemplateTile[] = [];
+    for (const template of this.templates) {
+      if (!template.hasTile(tileX, tileY)) continue;
+      for (const tile of template.getTilesOn(tileX, tileY)) {
+        result.push(tile);
+      }
+    }
+    return result;
   }
 
   storeTemplateTiles(): void {
-    const toStore = this.templateTiles.map((t) => ({
-      tileX: t.tileX,
-      tileY: t.tileY,
-      pixelX: t.pixelX,
-      pixelY: t.pixelY,
-      buffer: t.buffer,
-    }));
+    const toStore: StoredTemplate[] = this.templates.map((t) => t.toStored());
     GM_setValue('templates', JSON.stringify(toStore));
   }
 }
@@ -181,3 +181,10 @@ interface TemplateManagerContextValue {
 
 export const TemplateManagerContext =
   createContext<TemplateManagerContextValue | null>(null);
+
+function findColorId(r: number, g: number, b: number): number {
+  return (
+    palette.find((c) => c.rgb[0] === r && c.rgb[1] === g && c.rgb[2] === b)
+      ?.id ?? -1
+  );
+}
