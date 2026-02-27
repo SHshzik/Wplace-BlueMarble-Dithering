@@ -148,6 +148,10 @@ export class TemplateManager {
     this.templates = [new Template(results, colorSet, tileCoords)];
   }
 
+  getColorSetSignal(): Signal<ColorSet[]> | null {
+    return this.templates[0]?.colorSet ?? null;
+  }
+
   getTileSize(): number {
     return this.tileSize;
   }
@@ -177,6 +181,7 @@ interface TemplateManagerContextValue {
   coords: Signal<Coords>;
   setCoords: (coords: Coords) => void;
   createTemplate: (file: File) => void;
+  colorSetSignal: Signal<ColorSet[]> | null;
 }
 
 export const TemplateManagerContext =

@@ -18,6 +18,7 @@ function App() {
         coords: currentCoordsManager.getCurrentCoordsSignal(),
         setCoords: currentCoordsManager.createSetterForCurrentCoordinates(),
         createTemplate: templateManager.createTemplateFunc(),
+        colorSetSignal: templateManager.getColorSetSignal(),
       }}
     >
       <Overlay />

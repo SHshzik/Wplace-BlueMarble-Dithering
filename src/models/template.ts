@@ -1,3 +1,4 @@
+import { signal, Signal } from '@preact/signals';
 import TemplateTile, { StoredTile } from './template_tile';
 import ColorSet, { StoredColorSet } from './color_set';
 import TileCoords, { StoredTileCoords } from './tile_coords';
@@ -10,7 +11,7 @@ export interface StoredTemplate {
 
 export default class Template {
   tiles: TemplateTile[];
-  colorSet: ColorSet[];
+  colorSet: Signal<ColorSet[]>;
   tileCoords: TileCoords[];
 
   static fromStored(stored: StoredTemplate): Template {
@@ -26,7 +27,7 @@ export default class Template {
     tileCoords: TileCoords[],
   ) {
     this.tiles = tiles;
-    this.colorSet = colorSet;
+    this.colorSet = signal(colorSet);
     this.tileCoords = tileCoords;
   }
 
@@ -52,7 +53,7 @@ export default class Template {
   toStored(): StoredTemplate {
     return {
       tiles: this.tiles.map((t) => t.toStored()),
-      colorSet: this.colorSet.map((c) => c.toStored()),
+      colorSet: this.colorSet.value.map((c) => c.toStored()),
       tileCoords: this.tileCoords.map((tc) => tc.toStored()),
     };
   }

@@ -1,0 +1,65 @@
+.section {
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+.container {
+  resize: vertical;
+  height: 140px;
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.buttonsRow {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.button {
+  background-color: #bc2d2f;
+  border: none;
+  border-radius: 1em;
+  padding: 0 0.75ch;
+  color: white;
+  cursor: pointer;
+  font: inherit;
+}
+
+.button:hover,
+.button:focus-visible {
+  background-color: #1061e5;
+}
+
+.button:active {
+  background-color: #2e97ff;
+}
+
+.list {
+  /* контейнер списка цветов */
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.row input[type="checkbox"] {
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: 12px;
+}

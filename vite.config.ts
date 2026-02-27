@@ -29,7 +29,7 @@ export default defineConfig({
         updateURL: 'https://github.com/SHshzik/Wplace-BlueMarble-Dithering/blob/main/dist/RedMarble.user.js',
         downloadURL: 'https://github.com/SHshzik/Wplace-BlueMarble-Dithering/blob/main/dist/RedMarble.user.js',
         match: ['https://wplace.live/*'],
-        grant: ['GM_getResourceText', 'GM_addStyle', 'GM.setValue', 'GM_getValue'],
+        // grant: ['GM_getResourceText', 'GM_addStyle', 'GM.setValue', 'GM_getValue'],
         resource: { 'CSS-BM-File': 'https://raw.githubusercontent.com/SHshzik/Wplace-BlueMarble-Dithering/refs/heads/feature/global/dist/styles.css' }
       },
 
