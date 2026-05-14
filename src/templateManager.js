@@ -510,6 +510,9 @@ export default class TemplateManager {
       });
       // Save per-tile per-color painted counts
       this.tileColorProgress.set(tileKeyStr, tileColorPainted);
+      try {
+        window.postMessage({ source: 'blue-marble', bmEvent: 'bm-rebuild-color-list' }, '*');
+      } catch (_) { /* no-op */ }
 
       // Aggregate painted/wrong across tiles we've processed
       let aggPainted = 0;

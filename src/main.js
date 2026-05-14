@@ -721,6 +721,10 @@ function buildOverlayMain() {
     .buildElement()
   .buildOverlay(document.body);
 
+  const scheduleColorFilterListRebuild = debounce(() => {
+    try { window.buildColorFilterList?.(); } catch (_) {}
+  }, 50);
+
   // ------- Helper: Build the color filter list -------
   window.buildColorFilterList = () => {
     const iLogger = logger.withPrefix('buildColorFilterList')
@@ -731,20 +735,45 @@ function buildOverlayMain() {
       if (listContainer) { listContainer.innerHTML = '<small>No template colors to display.</small>'; }
       return;
     }
+    const getPaintedCountForColor = (rgb) => {
+      let painted = 0;
+      try {
+        const tileColorProgress = templateManager.tileColorProgress;
+        if (tileColorProgress) {
+          for (const tileColorData of tileColorProgress.values()) {
+            painted += tileColorData[rgb] || 0;
+          }
+        }
+      } catch (ignored) {}
+
+      return painted;
+    };
 
     listContainer.innerHTML = '';
-    const entries = Object.entries(t.colorPalette).sort((a,b) => {
-      const aE = a[1].enabled;
-      const bE = b[1].enabled;
+    const entries = Object.entries(t.colorPalette)
+      .map(([rgb, meta]) => {
+        const count = meta.count || 0;
+        const painted = Math.min(getPaintedCountForColor(rgb), count);
+        return [rgb, meta, painted];
+      })
+      .filter(([, meta, painted]) => painted < (meta.count || 0))
+      .sort((a, b) => {
+        const aE = a[1].enabled;
+        const bE = b[1].enabled;
 
-      // 1) Сначала по enabled: true выше false
-      if (aE !== bE) return aE ? -1 : 1;
+        // 1) Сначала по enabled: true выше false
+        if (aE !== bE) return aE ? -1 : 1;
 
-      // 2) Если enabled одинаковый — сортируем по count desc
-      return b[1].count - a[1].count;
-    }); // sort by frequency desc
+        // 2) Если enabled одинаковый — сортируем по count desc
+        return b[1].count - a[1].count;
+      }); // sort by frequency desc
 
-    for (const [rgb, meta] of entries) {
+    if (entries.length === 0) {
+      listContainer.innerHTML = '<small>All template colors are fully painted.</small>';
+      return;
+    }
+
+    for (const [rgb, meta, painted] of entries) {
       let row = document.createElement('div');
       row.style.display = 'flex';
       row.style.alignItems = 'center';
@@ -759,17 +788,6 @@ function buildOverlayMain() {
       let label = document.createElement('span');
       label.style.fontSize = '12px';
       const count = meta.count || 0;
-
-      // Aggregate painted pixels for this color across all processed tiles
-      let painted = 0;
-      try {
-        const tileColorProgress = templateManager.tileColorProgress;
-        if (tileColorProgress) {
-          for (const tileColorData of tileColorProgress.values()) {
-            painted += tileColorData[rgb] || 0;
-          }
-        }
-      } catch (ignored) {}
       
       let labelText = `${painted.toLocaleString()}/${count.toLocaleString()}`;
 
@@ -813,7 +831,7 @@ function buildOverlayMain() {
   // Listen for template creation/import completion to (re)build palette list
   window.addEventListener('message', (event) => {
     if (event?.data?.bmEvent === 'bm-rebuild-color-list') {
-      try { buildColorFilterList(); } catch (_) {}
+      scheduleColorFilterListRebuild();
     }
   });
 
