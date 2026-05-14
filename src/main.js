@@ -196,10 +196,19 @@ logger.info(rmBreakPointName, breakPoint)
 const userSettings = JSON.parse(GM_getValue('bmUserSettings', '{}')); // Loads the user settings
 logger.log('main', 'userSettings', userSettings);
 logger.log('main', 'Object.keys(userSettings).length', Object.keys(userSettings).length);
+let shouldSaveUserSettings = false;
 if (Object.keys(userSettings).length === 0) {
-  const uuid = crypto.randomUUID(); // Generates a random UUID
-  console.log('main', 'uuid', uuid);
-  GM.setValue('bmUserSettings', JSON.stringify({'uuid': uuid}));
+  userSettings.uuid = crypto.randomUUID(); // Generates a random UUID
+  console.log('main', 'uuid', userSettings.uuid);
+  shouldSaveUserSettings = true;
+}
+const initialHighlightColor = templateManager.setHighlightColor(userSettings.highlightColor);
+if (userSettings.highlightColor !== initialHighlightColor) {
+  userSettings.highlightColor = initialHighlightColor;
+  shouldSaveUserSettings = true;
+}
+if (shouldSaveUserSettings) {
+  GM.setValue('bmUserSettings', JSON.stringify(userSettings));
 }
 
 buildOverlayMain(); // Builds the main overlay
@@ -635,6 +644,24 @@ function buildOverlayMain() {
               overlay.apiManager.disableHighlight();
             }
           })
+        }).buildElement()
+        .addInput({
+          'type': 'color',
+          // 'id': 'bm-input-highlight-color',
+          // 'className': 'bm-highlight-color-picker',
+          'value': initialHighlightColor,
+          'title': 'Цвет подсветки'
+        }, (instance, input) => {
+          input.setAttribute('aria-label', 'Цвет подсветки');
+          input.addEventListener('input', () => {
+            const color = templateManager.setHighlightColor(input.value);
+            if (input.value !== color) {
+              input.value = color;
+            }
+            userSettings.highlightColor = color;
+            GM.setValue('bmUserSettings', JSON.stringify(userSettings));
+            instance.handleDisplayStatus(`Цвет подсветки: ${color}`);
+          });
         }).buildElement()
       .buildElement()
       .addDiv({'id': 'bm-contain-buttons-template'})

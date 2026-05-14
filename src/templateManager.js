@@ -64,6 +64,19 @@ export default class TemplateManager {
     this.templatesShouldBeDrawn = true; // Should ALL templates be drawn to the canvas?
     this.tileProgress = new Map(); // Tracks per-tile progress stats {painted, required, wrong}
     this.tileColorProgress = new Map(); // Tracks per-tile per-color painted pixels: key "tileKey" -> { "r,g,b": count, ... }
+    this.highlightColor = '#ff0000'; // Color used for highlight overlay
+    this.highlightColorRgb = [255, 0, 0];
+  }
+
+  setHighlightColor(color = '#ff0000') {
+    const normalized = /^#[0-9a-fA-F]{6}$/.test(color) ? color.toLowerCase() : '#ff0000';
+    this.highlightColor = normalized;
+    this.highlightColorRgb = [
+      parseInt(normalized.slice(1, 3), 16),
+      parseInt(normalized.slice(3, 5), 16),
+      parseInt(normalized.slice(5, 7), 16)
+    ];
+    return this.highlightColor;
   }
 
   /** Retrieves the pixel art canvas.
@@ -569,9 +582,8 @@ export default class TemplateManager {
 
     const drawSize = this.tileSize * this.drawMult; // Calculate draw multiplier for scaling
 
-    let selectedColor = document.querySelector('.border-primary.ring-primary');
-    console.warn(selectedColor)
-    // selectedColor && `rgb(${r}, ${g}, ${b})` === selectedColor?.style?.backgroundColor
+    const selectedColor = document.querySelector('.border-primary.ring-primary');
+    const highlightRgb = this.highlightColorRgb ?? [255, 0, 0];
 
     const tileBitmap = await createImageBitmap(tileBlob);
     const baseBitmap = await createImageBitmap(baseBlob);
@@ -626,12 +638,6 @@ export default class TemplateManager {
 
     // Precompute pixel highlight overlay
 
-    // Make the color have a breathing effect
-    const time = Date.now() / 1000;
-    const range = (time % 10) / 10; // [0, 1] range
-    const cycle = (Math.cos(range * 2 * Math.PI) + 1) / 2; // [0, 1] range
-    const value = 0.7 + cycle * 0.3;
-
     {
       let setPixel = (data, x, y, rgb) => {
         const pixelIndex = (y * this.drawMult + x) * 4;
@@ -641,15 +647,10 @@ export default class TemplateManager {
         data[pixelIndex + 3] = 255;
       };
 
-      // Set surrounding pixels to rainbow
-      setPixel(pixelHighlightData, 1 + (+1), 1 + ( 0), [255, 0, 0]);
-      // setPixel(pixelHighlightData, 1 + (+1), 1 + (-1), hsvToRgb( 45, 1, value));
-      setPixel(pixelHighlightData, 1 + ( 0), 1 + (-1), [255, 0, 0]);
-      // setPixel(pixelHighlightData, 1 + (-1), 1 + (-1), hsvToRgb(135, 1, value));
-      setPixel(pixelHighlightData, 1 + (-1), 1 + ( 0), [255, 0, 0]);
-      // setPixel(pixelHighlightData, 1 + (-1), 1 + (+1), hsvToRgb(225, 1, value));
-      setPixel(pixelHighlightData, 1 + ( 0), 1 + (+1), [255, 0, 0]);
-      // setPixel(pixelHighlightData, 1 + (+1), 1 + (+1), hsvToRgb(315, 1, value));
+      setPixel(pixelHighlightData, 1 + (+1), 1 + ( 0), highlightRgb);
+      setPixel(pixelHighlightData, 1 + ( 0), 1 + (-1), highlightRgb);
+      setPixel(pixelHighlightData, 1 + (-1), 1 + ( 0), highlightRgb);
+      setPixel(pixelHighlightData, 1 + ( 0), 1 + (+1), highlightRgb);
     }
     pixelHighlightContext.putImageData(pixelHighlightImg, 0, 0);
 
